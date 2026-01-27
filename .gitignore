@@ -3,3 +3,7 @@ node_modules
 .DS_Store
 dist
 build
+
+.gemini
+
+taughtcode-firebase-adminsdk-fbsvc.json
