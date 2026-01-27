@@ -1,0 +1,33 @@
+# Issue 001: Project Setup and PSC Folder Structure Implementation
+
+**Status**: Completed
+**Type**: Feature/Structure
+**Created**: 2026-01-27
+
+## Description
+Initial setup of the project following the Provider-Service-Controller (PSC) pattern.
+
+## Tasks
+- [x] Create project directory structure (config, controller, middleware, models, providers, services, etc.)
+- [x] Implement core configuration files (AI, Firebase, Swagger)
+- [x] Set up base providers for Auth and AI
+- [x] Implement initial services and controllers
+- [x] Document architecture and folder structure
+
+## Implementation Details
+- **Path**: `src/` folder
+- **Pattern**: Provider -> Service -> Controller
+- **Branch**: `nishuns/setup-project`
+
+## Commits
+- `feat(structure): initialize project folder structure`
+- `docs(architecture): add folder structure documentation`
+- `chore(core): setup project configuration and core files`
+- `feat(models): add firebase models, schemas and utilities`
+- `feat(auth): add authentication middleware and providers`
+- `feat(ai): implement AI service, providers, and tools`
+- `feat(docs): add documentation handling system`
+- `feat(user): add user profile controller and validation`
+- `feat(notifications): add notification handler service`
+- `feat(api): setup main routes and validation middleware`
+- `chore(git): update gitignore and cleanup`
