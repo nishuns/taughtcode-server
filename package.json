@@ -1,0 +1,23 @@
+{
+  "name": "taughtcode-server",
+  "version": "1.0.0",
+  "description": "AI orchestrated server based on PSU pattern for all the task that needs to be done in here",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.desktop.com:nishuns/taughtcode-server.git"
+  },
+  "keywords": [
+    "node.js",
+    "express",
+    "event-based",
+    "queue",
+    "worker-threads",
+    "AI"
+  ],
+  "author": "Nischay Sharma",
+  "license": "MIT"
+}
