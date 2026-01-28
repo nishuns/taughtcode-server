@@ -13,6 +13,7 @@ export default {
     // Add route paths here to make them publicly accessible
     publicRoutes: [
         // Examples (uncomment to enable):
+        '/docs',
         // 'guides/quick-start',
         // 'api/endpoints',
         // 'guides',  // Makes entire guides section public
