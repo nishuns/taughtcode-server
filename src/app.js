@@ -35,7 +35,7 @@ if (process.env.NODE_ENV !== 'test') {
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'ProfileIQ API Documentation',
+    customSiteTitle: 'TaughtCode API Documentation',
     customfavIcon: '/favicon.ico',
     swaggerOptions: {
         persistAuthorization: true, // Persist auth token in Swagger UI
@@ -66,7 +66,7 @@ app.use(`${BASE_PATH}/${API_VERSION}`, apiRoutes);
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: 'ProfileIQ API',
+        message: 'TaughtCode API',
         version: process.env.APP_VERSION || '1.0.0',
         api: `${BASE_PATH}/${API_VERSION}`,
         docs: {

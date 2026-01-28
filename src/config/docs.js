@@ -17,7 +17,7 @@ export default {
         // 'api/endpoints',
         // 'guides',  // Makes entire guides section public
         // 'api',     // Makes entire api section public
-        '/docs/structure/PROFILEIQ_DEVELOPER_DOCUMENTATION',
+        // '/docs/structure/TAUGHTCODE_DEVELOPER_DOCUMENTATION',
     ],
 
     // Session configuration

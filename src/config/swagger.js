@@ -4,12 +4,12 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'ProfileIQ API',
+            title: 'TaughtCode API',
             version: '1.0.0',
-            description: 'ProfileIQ API Documentation',
+            description: 'TaughtCode API Documentation',
             contact: {
-                name: 'ProfileIQ API Support',
-                email: 'support@profileiq.com'
+                name: 'TaughtCode API Support',
+                email: 'support@taughtcode.com'
             },
             license: {
                 name: 'ISC',
@@ -22,7 +22,7 @@ const options = {
                 description: 'Development server'
             },
             {
-                url: 'https://api.profileiq.com',
+                url: 'https://api.taughtcode.com',
                 description: 'Production server'
             }
         ],

@@ -255,8 +255,8 @@ async function getIndexData() {
     return {
         title: 'Documentation Index',
         content: `
-      <h1>ProfileIQ Documentation</h1>
-      <p>Welcome to the ProfileIQ documentation. Select a topic from the sidebar to get started.</p>
+      <h1>TaughtCode Documentation</h1>
+      <p>Welcome to the TaughtCode documentation. Select a topic from the sidebar to get started.</p>
       ${quickLinksHTML}
       <p><em>Documentation is automatically updated. New files will appear in the navigation automatically.</em></p>
     `
