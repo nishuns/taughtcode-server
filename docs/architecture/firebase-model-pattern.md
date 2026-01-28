@@ -32,9 +32,30 @@ While designed to feel like Mongoose, there are fundamental differences due to t
 
 ## Usage Guide
 
-### 1. Defining a Model
+### 1. Direct Instantiation (Simplified Style)
 
-Create a new file in `src/models/` extending `FirebaseModel`.
+For simple collections where you don't need custom methods, you can instantiate `FirebaseModel` directly. This is cleaner and easier to read.
+
+```javascript
+import { createModel } from '../models/index.js';
+import Joi from 'joi';
+
+const categorySchema = Joi.object({
+    name: Joi.string().required(),
+    slug: Joi.string().required()
+});
+
+// Create model instance directly
+const Category = createModel('categories', categorySchema);
+
+// Usage
+await Category.create({ name: 'Tech', slug: 'tech' });
+const allCategories = await Category.find();
+```
+
+### 2. Class Extension (Advanced Style)
+
+For models requiring custom business logic or complex queries, extend the class.
 
 ```javascript
 // src/models/productModel.js
@@ -42,44 +63,8 @@ import FirebaseModel from '../utils/firebaseModel.js';
 import Joi from 'joi';
 
 const productSchema = Joi.object({
-    name: Joi.string().required(),
-    price: Joi.number().min(0).required(),
-    stock: Joi.number().integer().default(0)
-});
+// ...
 
-class ProductModel extends FirebaseModel {
-    constructor() {
-        super('products', productSchema);
-    }
-
-    // Custom method specific to products
-    async findInStock() {
-        return this.collection.where('stock', '>', 0).get()
-            .then(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }
-}
-
-export default new ProductModel();
-```
-
-### 2. Using the Model in a Service
-
-```javascript
-import ProductModel from '../models/productModel.js';
-
-async function createProduct(data) {
-    // Validates data against schema and saves to Firestore
-    // Auto-adds createdAt and updatedAt
-    const newProduct = await ProductModel.create(data);
-    return newProduct;
-}
-
-async function getProduct(id) {
-    // Returns plain object (not Firestore snapshot)
-    const product = await ProductModel.findById(id);
-    return product;
-}
-```
 
 ## Implementation Details
 
