@@ -1,5 +1,6 @@
 import * as docsService from '../services/docsService.js';
 import { renderDocPage, renderTemplate } from '../utils/templateRenderer.js';
+import docsConfig from '../config/docs.js';
 
 /**
  * Documentation Controller
@@ -11,6 +12,11 @@ import { renderDocPage, renderTemplate } from '../utils/templateRenderer.js';
  * GET /docs/:path(*)
  */
 async function getDoc(req, res) {
+    // Handle Login POST
+    if (req.method === 'POST') {
+        return handleLogin(req, res);
+    }
+
     try {
         // Extract path from request (Express 5 regex route)
         // req.path is relative to router mount point (/docs)
@@ -61,6 +67,11 @@ async function getDoc(req, res) {
  * GET /docs
  */
 async function listDocs(req, res) {
+    // Handle Login POST
+    if (req.method === 'POST') {
+        return handleLogin(req, res);
+    }
+
     try {
         // Check for refresh parameter (allow manual refresh via ?refresh=true)
         const forceRefresh = req.query.refresh === 'true';
@@ -87,6 +98,40 @@ async function listDocs(req, res) {
             error: 'Internal server error'
         });
     }
+}
+
+/**
+ * Handle documentation login
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+async function handleLogin(req, res) {
+    const { password } = req.body;
+
+    if (password === docsConfig.password) {
+        // Set authentication cookie
+        res.cookie('docs_auth', password, docsConfig.session);
+        
+        // If it's an AJAX request (from our template), send success
+        if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+            return res.json({ success: true });
+        }
+        
+        // Otherwise redirect back
+        return res.redirect(req.originalUrl);
+    }
+
+    // Invalid password
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+        return res.status(401).json({ success: false, error: 'Invalid password' });
+    }
+
+    // Render login page with error
+    const html = await renderTemplate('docs-login', {
+        errorMessage: 'Invalid password. Please try again.',
+        errorDisplay: 'block'
+    });
+    res.status(401).send(html);
 }
 
 /**
