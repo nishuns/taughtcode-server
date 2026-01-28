@@ -1,243 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#121212',
+                            800: '#1e1e1e',
+                            700: '#2d2d2d',
+                            600: '#3d3d3d',
+                        },
+                        brand: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        }
+                    },
+                    typography: (theme) => ({
+                        DEFAULT: {
+                            css: {
+                                color: theme('colors.gray.300'),
+                                h1: { color: theme('colors.white') },
+                                h2: { color: theme('colors.gray.100') },
+                                h3: { color: theme('colors.gray.200') },
+                                h4: { color: theme('colors.gray.300') },
+                                strong: { color: theme('colors.white') },
+                                code: { color: theme('colors.brand.500') },
+                                a: { color: theme('colors.brand.500'), '&:hover': { color: theme('colors.brand.600') } },
+                                pre: { backgroundColor: theme('colors.dark.900') },
+                            },
+                        },
+                    }),
+                }
+            },
+            plugins: [
+                // Minimal typography plugin simulation for markdown styles
+                function({ addComponents, theme }) {
+                    addComponents({
+                        '.markdown-body h1': { fontSize: '2.25rem', fontWeight: '700', marginBottom: '1.5rem', borderBottom: `1px solid ${theme('colors.dark.600')}`, paddingBottom: '0.5rem', color: theme('colors.white') },
+                        '.markdown-body h2': { fontSize: '1.875rem', fontWeight: '600', marginTop: '2rem', marginBottom: '1rem', color: theme('colors.gray.100') },
+                        '.markdown-body h3': { fontSize: '1.5rem', fontWeight: '600', marginTop: '1.5rem', marginBottom: '0.75rem', color: theme('colors.gray.200') },
+                        '.markdown-body p': { marginBottom: '1rem', lineHeight: '1.75', color: theme('colors.gray.300') },
+                        '.markdown-body ul': { listStyleType: 'disc', paddingLeft: '1.5rem', marginBottom: '1rem', color: theme('colors.gray.300') },
+                        '.markdown-body ol': { listStyleType: 'decimal', paddingLeft: '1.5rem', marginBottom: '1rem', color: theme('colors.gray.300') },
+                        '.markdown-body li': { marginBottom: '0.5rem' },
+                        '.markdown-body pre': { backgroundColor: theme('colors.dark.900'), padding: '1rem', borderRadius: '0.5rem', overflowX: 'auto', marginBottom: '1.5rem', border: `1px solid ${theme('colors.dark.700')}` },
+                        '.markdown-body code': { fontFamily: theme('fontFamily.mono'), backgroundColor: theme('colors.dark.700'), padding: '0.2rem 0.4rem', borderRadius: '0.25rem', fontSize: '0.875em', color: theme('colors.brand.500') },
+                        '.markdown-body pre code': { backgroundColor: 'transparent', padding: '0', color: theme('colors.gray.200') },
+                        '.markdown-body blockquote': { borderLeft: `4px solid ${theme('colors.brand.500')}`, paddingLeft: '1rem', fontStyle: 'italic', color: theme('colors.gray.400'), margin: '1.5rem 0' },
+                        '.markdown-body table': { width: '100%', borderCollapse: 'collapse', marginBottom: '1.5rem' },
+                        '.markdown-body th': { backgroundColor: theme('colors.dark.700'), padding: '0.75rem', textAlign: 'left', border: `1px solid ${theme('colors.dark.600')}`, color: theme('colors.white') },
+                        '.markdown-body td': { padding: '0.75rem', border: `1px solid ${theme('colors.dark.600')}`, color: theme('colors.gray.300') },
+                        '.markdown-body a': { color: theme('colors.brand.500'), textDecoration: 'none', transition: 'color 0.2s', '&:hover': { color: theme('colors.brand.600') } },
+                        '.markdown-body hr': { borderColor: theme('colors.dark.600'), margin: '2rem 0' },
+                    })
+                }
+            ]
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-            display: flex;
-            min-height: 100vh;
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
         }
-
-        .sidebar {
-            width: 280px;
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            overflow-y: auto;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-        }
-
-        .sidebar h2 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            border-bottom: 2px solid #34495e;
-            padding-bottom: 10px;
-        }
-
-        .nav-section {
-            margin-bottom: 25px;
-        }
-
-        .nav-section-title {
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #95a5a6;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        .nav-item {
-            margin-bottom: 5px;
-        }
-
-        .nav-item a {
-            color: #ecf0f1;
-            text-decoration: none;
-            display: block;
-            padding: 8px 12px;
+        ::-webkit-scrollbar-thumb {
+            background: #3d3d3d;
             border-radius: 4px;
-            transition: background 0.2s;
-            font-size: 14px;
         }
-
-        .nav-item a:hover {
-            background: #34495e;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
         }
-
+        
+        /* Navigation Styles */
+        .nav-section-title {
+            @apply text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3 mt-6;
+        }
+        .nav-item a {
+            @apply block px-3 py-2 text-sm text-gray-400 rounded-lg transition-colors duration-200 hover:text-white hover:bg-dark-700;
+        }
         .nav-item a.active {
-            background: #3498db;
-            color: white;
-        }
-
-        .content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 40px;
-            max-width: 900px;
-        }
-
-        .content-header {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .content-header h1 {
-            font-size: 32px;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .markdown-body {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .markdown-body h1 {
-            font-size: 28px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-
-        .markdown-body h2 {
-            font-size: 24px;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            color: #34495e;
-        }
-
-        .markdown-body h3 {
-            font-size: 20px;
-            margin-top: 20px;
-            margin-bottom: 12px;
-            color: #34495e;
-        }
-
-        .markdown-body h4 {
-            font-size: 18px;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            color: #34495e;
-        }
-
-        .markdown-body p {
-            margin-bottom: 15px;
-            line-height: 1.8;
-        }
-
-        .markdown-body ul,
-        .markdown-body ol {
-            margin-bottom: 15px;
-            padding-left: 30px;
-        }
-
-        .markdown-body li {
-            margin-bottom: 8px;
-        }
-
-        .markdown-body code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #e74c3c;
-        }
-
-        .markdown-body pre {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 20px;
-            border-radius: 6px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-        }
-
-        .markdown-body pre code {
-            background: none;
-            color: #ecf0f1;
-            padding: 0;
-        }
-
-        .markdown-body table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .markdown-body table th,
-        .markdown-body table td {
-            border: 1px solid #e0e0e0;
-            padding: 12px;
-            text-align: left;
-        }
-
-        .markdown-body table th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-
-        .markdown-body blockquote {
-            border-left: 4px solid #3498db;
-            padding-left: 20px;
-            margin-left: 0;
-            color: #666;
-            font-style: italic;
-        }
-
-        .markdown-body a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        .markdown-body a:hover {
-            text-decoration: underline;
-        }
-
-        .markdown-body hr {
-            border: none;
-            border-top: 2px solid #e0e0e0;
-            margin: 30px 0;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
-            }
-
-            .content {
-                margin-left: 0;
-            }
+            @apply bg-brand-600/20 text-brand-500 border border-brand-500/30;
         }
     </style>
 </head>
+<body class="bg-dark-900 text-gray-300 font-sans min-h-screen flex overflow-hidden">
 
-<body>
-    <div class="sidebar">
-        <h2>📚 Documentation</h2>
-        {{navigation}}
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 w-full z-50 bg-dark-800 border-b border-dark-700 p-4 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-white tracking-tight">📚 Docs</h2>
+        <button id="menuBtn" class="text-gray-400 hover:text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
     </div>
-    <div class="content">
-        <div class="content-header">
-            <h1>{{title}}</h1>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-dark-800 border-r border-dark-700 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40 overflow-y-auto flex flex-col">
+        <div class="p-6 sticky top-0 bg-dark-800 z-10 border-b border-dark-700/50">
+            <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                <span class="text-brand-500">ProfileIQ</span> Docs
+            </h2>
         </div>
-        <div class="markdown-body">
-            {{content}}
+        <div class="p-4 flex-1">
+            {{navigation}}
         </div>
     </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden glass"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-72 h-screen overflow-y-auto bg-dark-900 scroll-smooth">
+        <div class="max-w-4xl mx-auto px-6 py-10 md:py-12 mt-16 md:mt-0">
+            <!-- Breadcrumbs / Header -->
+            <div class="mb-8 pb-6 border-b border-dark-700">
+                <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">{{title}}</h1>
+            </div>
+            
+            <!-- Content -->
+            <div class="markdown-body">
+                {{content}}
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-16 pt-8 border-t border-dark-700 text-center text-gray-500 text-sm">
+                <p>&copy; <script>document.write(new Date().getFullYear())</script> ProfileIQ. All rights reserved.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mobile Menu Logic
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Highlight active code blocks if any (optional enhancement)
+        document.querySelectorAll('pre code').forEach((block) => {
+            // Placeholder for syntax highlighting logic if needed later
+        });
+    </script>
 </body>
-
 </html>

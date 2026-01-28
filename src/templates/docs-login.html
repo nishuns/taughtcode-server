@@ -1,132 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation Access - ProfileIQ</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#121212',
+                            800: '#1e1e1e',
+                            700: '#2d2d2d',
+                        },
+                        brand: {
+                            500: '#6366f1', // Indigo 500
+                            600: '#4f46e5', // Indigo 600
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            color: #333;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 10px;
-            display: {{errorDisplay}};
-        }
-
-        .error.show {
-            display: block;
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
+<body class="bg-dark-900 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-dark-800 rounded-2xl shadow-2xl p-8 border border-dark-700">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">🔒 Documentation Access</h1>
+            <p class="text-gray-400 text-sm">Please enter the password to access the documentation.</p>
+        </div>
 
-<body>
-    <div class="login-container">
-        <h1>🔒 Documentation Access</h1>
-        <p>Please enter the password to access the documentation.</p>
-        <form id="loginForm" method="POST">
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autofocus>
+        <form id="loginForm" method="POST" class="space-y-6">
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" required autofocus
+                        class="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent text-white placeholder-gray-500 transition-all duration-200 outline-none"
+                        placeholder="Enter access password">
+                </div>
             </div>
-            <button type="submit">Access Documentation</button>
-            <div class="error" id="error">{{errorMessage}}</div>
+
+            <button type="submit"
+                class="w-full py-3 px-4 bg-gradient-to-r from-brand-500 to-purple-600 hover:from-brand-600 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-800 focus:ring-brand-500">
+                Access Documentation
+            </button>
+
+            <div class="error hidden mt-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200 text-sm text-center" id="error">
+                {{errorMessage}}
+            </div>
         </form>
     </div>
+
     <script>
         const form = document.getElementById('loginForm');
         const errorDiv = document.getElementById('error');
+
+        // Show error if it exists on load
+        const initialError = "{{errorMessage}}";
+        if(initialError && initialError.length > 0) {
+            errorDiv.classList.remove('hidden');
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const password = document.getElementById('password').value;
 
             try {
-                // Use URLSearchParams for application/x-www-form-urlencoded
                 const formData = new URLSearchParams();
                 formData.append('password', password);
 
@@ -142,35 +94,30 @@
                     window.location.reload();
                 } else {
                     const text = await response.text();
-                    // Check if response is HTML (login form with error) or JSON
+                    let errorMessage = 'Invalid password. Please try again.';
+
                     if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-                        // It's the login form with error, extract error message
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(text, 'text/html');
                         const errorMsg = doc.querySelector('.error');
                         if (errorMsg && errorMsg.textContent.trim()) {
-                            errorDiv.textContent = errorMsg.textContent.trim();
-                        } else {
-                            errorDiv.textContent = 'Invalid password. Please try again.';
+                            errorMessage = errorMsg.textContent.trim();
                         }
                     } else {
                         try {
                             const data = JSON.parse(text);
-                            errorDiv.textContent = data.error || 'Invalid password';
-                        } catch {
-                            errorDiv.textContent = 'Invalid password';
-                        }
+                            if(data.error) errorMessage = data.error;
+                        } catch {}
                     }
-                    errorDiv.style.display = 'block';
-                    errorDiv.classList.add('show');
+                    
+                    errorDiv.textContent = errorMessage;
+                    errorDiv.classList.remove('hidden');
                 }
             } catch (error) {
                 errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
-                errorDiv.classList.add('show');
+                errorDiv.classList.remove('hidden');
             }
         });
     </script>
 </body>
-
 </html>
