@@ -1,5 +1,57 @@
+import Joi from 'joi';
 import { db } from '../config/firebase.js';
 import { docToObj, buildQuery } from './firebaseUtils.js';
+
+/**
+ * Convert Mongoose-style schema object to Joi schema
+ * @param {Object} schemaObj 
+ * @returns {Object} Joi Schema
+ */
+const convertToJoi = (schemaObj) => {
+    if (!schemaObj) return null;
+    if (schemaObj.isJoi) return schemaObj; // Already a Joi schema
+
+    const joiDefinition = {};
+
+    for (const [key, config] of Object.entries(schemaObj)) {
+        let field;
+        const type = config.type || config; // Handle shorthand { name: String }
+
+        // Resolve Type
+        if (type === String) field = Joi.string().allow('', null);
+        else if (type === Number) field = Joi.number();
+        else if (type === Boolean) field = Joi.boolean();
+        else if (type === Date) field = Joi.date();
+        else if (type === Array) field = Joi.array();
+        else if (type === Object) field = Joi.object();
+        else if (typeof type === 'object' && !Array.isArray(type)) {
+            // Recursive for nested objects
+            field = convertToJoi(type);
+        }
+        else field = Joi.any();
+
+        // Apply Constraints
+        if (config.required) field = field.required();
+        if (config.trim && field.trim) field = field.trim();
+        if (config.lowercase && field.lowercase) field = field.lowercase();
+        if (config.uppercase && field.uppercase) field = field.uppercase();
+        if (config.enum) field = field.valid(...config.enum);
+        if (config.minlength) field = field.min(config.minlength);
+        if (config.maxlength) field = field.max(config.maxlength);
+        if (config.min !== undefined) field = field.min(config.min);
+        if (config.max !== undefined) field = field.max(config.max);
+        
+        // Handle Default Values
+        if (config.default !== undefined) {
+            // Joi default() accepts values or functions
+            field = field.default(config.default);
+        }
+
+        joiDefinition[key] = field;
+    }
+
+    return Joi.object(joiDefinition);
+};
 
 /**
  * Base Model class for Firestore collections
@@ -8,12 +60,12 @@ import { docToObj, buildQuery } from './firebaseUtils.js';
 class FirebaseModel {
     /**
      * @param {string} collectionName - Name of the Firestore collection
-     * @param {Object} schema - Joi schema for validation (optional)
+     * @param {Object} schema - Joi schema or Mongoose-style object
      */
     constructor(collectionName, schema = null) {
         this.collectionName = collectionName;
         this.collection = db.collection(collectionName);
-        this.schema = schema;
+        this.schema = convertToJoi(schema);
     }
 
     /**

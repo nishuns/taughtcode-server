@@ -13,6 +13,63 @@ Directly using the Firestore SDK in Controllers or Services can lead to code dup
 3.  **Validation Schemas**: Joi schemas (e.g., `src/validation/`) that define the structure and constraints of the data.
 4.  **Utilities**: Helper functions in `src/utils/firebaseUtils.js` for data transformation (e.g., converting Firestore timestamps).
 
+## Usage Guide
+
+### 1. Modern Mongoose-Style Definition
+
+You can define schemas using familiar Mongoose syntax. The `FirebaseModel` automatically converts these to validation rules.
+
+```javascript
+import FirebaseModel from '../utils/firebaseModel.js';
+
+const organizationSchema = {
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['enterprise', 'startup', 'personal'],
+    default: 'personal'
+  },
+  ownerId: {
+    type: String,
+    required: true
+  },
+  settings: {
+    type: Object,
+    default: {
+      allowApiKeys: true,
+      maxUsers: 50
+    }
+  },
+  createdAt: {
+    type: Date,
+    default: () => new Date()
+  }
+};
+
+// Easy to read instantiation
+const Organization = new FirebaseModel('organizations', organizationSchema);
+
+export default Organization;
+```
+
+### 2. Direct Instantiation (Shorthand Style)
+
+For very simple collections, you can even use a shorthand style.
+
+```javascript
+import { createModel } from '../models/index.js';
+
+// Creating a simple model with just types
+const Tag = createModel('tags', {
+    name: String,
+    slug: { type: String, lowercase: true }
+});
+```
+
 ---
 
 ## Comparison: FirebaseModel vs. Mongoose
@@ -22,48 +79,11 @@ While designed to feel like Mongoose, there are fundamental differences due to t
 | Feature | Mongoose (MongoDB) | FirebaseModel (Firestore) |
 | :--- | :--- | :--- |
 | **Connection** | Maintains a persistent TCP connection pool. | Stateless HTTP/gRPC (via SDK). |
-| **Schemas** | Strict schemas defined in Mongoose. | **Joi** schemas applied at the application layer. |
+| **Schemas** | Strict schemas defined in Mongoose. | **Mongoose-style** objects converted to **Joi** internally. |
 | **Queries** | Rich query language (`$gt`, `$in`, regex). | Limited Firestore queries (equality, basic range). |
 | **Relations** | `populate()` for joining collections. | No native joins. Manual fetching required. |
-| **Middleware** | Pre/Post hooks (`pre('save')`). | Not implemented (could be added). |
+| **Middleware** | Pre/Post hooks (`pre('save')`). | Not implemented. |
 | **ID** | `_id` (ObjectId). | `id` (String/UUID). |
-
----
-
-## Usage Guide
-
-### 1. Direct Instantiation (Simplified Style)
-
-For simple collections where you don't need custom methods, you can instantiate `FirebaseModel` directly. This is cleaner and easier to read.
-
-```javascript
-import { createModel } from '../models/index.js';
-import Joi from 'joi';
-
-const categorySchema = Joi.object({
-    name: Joi.string().required(),
-    slug: Joi.string().required()
-});
-
-// Create model instance directly
-const Category = createModel('categories', categorySchema);
-
-// Usage
-await Category.create({ name: 'Tech', slug: 'tech' });
-const allCategories = await Category.find();
-```
-
-### 2. Class Extension (Advanced Style)
-
-For models requiring custom business logic or complex queries, extend the class.
-
-```javascript
-// src/models/productModel.js
-import FirebaseModel from '../utils/firebaseModel.js';
-import Joi from 'joi';
-
-const productSchema = Joi.object({
-// ...
 
 
 ## Implementation Details
