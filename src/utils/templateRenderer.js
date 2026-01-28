@@ -71,16 +71,22 @@ function buildNavigationHTML(navigation, currentPath) {
     let html = '';
 
     for (const section of navigation) {
-        html += `<div class="nav-section">`;
-        html += `<div class="nav-section-title">${section.section}</div>`;
+        html += `<div class="mb-8">`;
+        html += `<h3 class="nav-section-title">${section.section}</h3>`;
+        html += `<ul class="space-y-1">`;
 
         for (const item of section.items) {
             const isActive = currentPath === item.path || currentPath.startsWith(item.path + '/');
-            html += `<div class="nav-item">`;
-            html += `<a href="${item.path}" class="${isActive ? 'active' : ''}">${item.name}</a>`;
-            html += `</div>`;
+            html += `<li class="nav-item">`;
+            html += `<a href="${item.path}" class="${isActive ? 'active' : ''}">
+                <span class="flex items-center gap-2">
+                    ${item.name}
+                </span>
+            </a>`;
+            html += `</li>`;
         }
 
+        html += `</ul>`;
         html += `</div>`;
     }
 
