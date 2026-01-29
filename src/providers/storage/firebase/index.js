@@ -5,8 +5,8 @@ class FirebaseStorageProvider extends BaseStorageProvider {
     constructor() {
         super();
         // Use configured bucket or fall back to default
-        this.bucketName = process.env.FIREBASE_STORAGE_BUCKET || undefined; 
-        this.bucket = admin.storage().bucket(this.bucketName);
+        // this.bucketName = process.env.FIREBASE_STORAGE_BUCKET || undefined; 
+        this.bucket = admin.storage().bucket();
     }
 
     /**
@@ -18,7 +18,7 @@ class FirebaseStorageProvider extends BaseStorageProvider {
     async upload(fileBuffer, destination, options = {}) {
         try {
             const file = this.bucket.file(destination);
-            
+
             const metadata = {
                 contentType: options.mimeType,
                 metadata: options.metadata || {}
