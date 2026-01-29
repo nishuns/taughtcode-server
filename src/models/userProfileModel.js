@@ -71,9 +71,13 @@ const userProfileSchema = {
             language: 'en'
         }
     },
+    organizationId: {
+        type: String, // Link to Organization Model
+        default: null
+    },
     status: {
         type: String,
-        enum: ['active', 'inactive', 'suspended'],
+        enum: ['active', 'deactivated', 'disabled'],
         default: 'active'
     },
     createdAt: {

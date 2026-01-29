@@ -63,10 +63,19 @@ async function isDisplayNameTaken(displayName) {
     return users.length > 0;
 }
 
+/**
+ * List users with filters
+ * @param {Object} filters 
+ */
+async function listUsers(filters = {}) {
+    return await User.find(filters);
+}
+
 export {
     createUser,
     getUser,
     updateUser,
     deleteUser,
-    isDisplayNameTaken
+    isDisplayNameTaken,
+    listUsers
 };
