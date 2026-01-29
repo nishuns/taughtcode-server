@@ -4,8 +4,8 @@ import { admin } from '../../../config/firebase.js';
 class FirebaseStorageProvider extends BaseStorageProvider {
     constructor() {
         super();
-        this.bucketName = process.env.FIREBASE_STORAGE_BUCKET;
-        // If bucket name is not provided, it attempts to use the default one
+        // Use configured bucket or fall back to default
+        this.bucketName = process.env.FIREBASE_STORAGE_BUCKET || undefined; 
         this.bucket = admin.storage().bucket(this.bucketName);
     }
 
