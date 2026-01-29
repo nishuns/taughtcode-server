@@ -1,4 +1,6 @@
 import express from 'express';
+import userProfileRoutes from './userProfile.js';
+
 const router = express.Router();
 
 /**
@@ -6,6 +8,9 @@ const router = express.Router();
  * 
  * Base path: /api/v1
  */
+
+// User Profile Routes
+router.use('/users', userProfileRoutes);
 
 /**
  * @swagger

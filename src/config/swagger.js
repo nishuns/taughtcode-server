@@ -27,7 +27,29 @@ const options = {
             }
         ],
         components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            },
             schemas: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        uid: { type: 'string' },
+                        email: { type: 'string' },
+                        displayName: { type: 'string' },
+                        photoURL: { type: 'string' },
+                        occupation: { type: 'string' },
+                        bio: { type: 'string' },
+                        writingStyle: { type: 'string' },
+                        role: { type: 'string' },
+                        status: { type: 'string' },
+                        organizationId: { type: 'string' }
+                    }
+                },
                 ErrorResponse: {
                     type: 'object',
                     properties: {
