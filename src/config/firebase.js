@@ -9,7 +9,8 @@ if (!databaseURL) {
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL
+    databaseURL,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
 });
 
 // const db = admin.firestore();
