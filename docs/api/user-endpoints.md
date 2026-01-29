@@ -1,15 +1,15 @@
-# API Endpoints
+# User API Endpoints
 
-Base URL: `/api/v1`
+Base URL: `/api/v1/users`
 
 Authentication: Bearer Token (Firebase ID Token)
 
-## User Profile
+## Onboarding & Profile
 
 ### Onboard User
 Completes the user registration process by creating a profile and optionally joining/creating an organization.
 
-- **URL**: `/users/onboard`
+- **URL**: `/onboard`
 - **Method**: `POST`
 - **Content-Type**: `multipart/form-data`
 - **Body Parameters**:
@@ -24,41 +24,51 @@ Completes the user registration process by creating a profile and optionally joi
 ### Get Current Profile
 Retrieve the profile of the currently authenticated user.
 
-- **URL**: `/users/me`
+- **URL**: `/me`
 - **Method**: `GET`
 - **Success Response**: `200 OK` with User object.
 
 ### Update Profile
 Update details of the current user.
 
-- **URL**: `/users/me`
+- **URL**: `/me`
 - **Method**: `PATCH`
 - **Body Parameters**: (JSON)
     - Any writable User schema field (e.g., `bio`, `displayName`, `preferences`).
 
+## User Management
+
 ### Get User by ID
 Fetch a user's public profile details.
 
-- **URL**: `/users/:id`
+- **URL**: `/:id`
 - **Method**: `GET`
 
 ### List Users (Admin)
 Get a list of all users, optionally filtered.
 
-- **URL**: `/users`
+- **URL**: `/`
 - **Method**: `GET`
 - **Query Params**:
     - `role` (optional): Filter by role.
     - `status` (optional): Filter by status.
 
+## Status Management
+
 ### Deactivate User
 Soft delete a user account (Self or Admin).
 
-- **URL**: `/users/:id/deactivate`
+- **URL**: `/:id/deactivate`
 - **Method**: `PATCH`
 
-### Disable/Activate User (Admin)
-Ban or unban a user.
+### Disable User (Admin)
+Ban a user account.
 
-- **URL**: `/users/:id/disable` or `/users/:id/activate`
+- **URL**: `/:id/disable`
+- **Method**: `PATCH`
+
+### Activate User (Admin)
+Unban/Reactivate a user account.
+
+- **URL**: `/:id/activate`
 - **Method**: `PATCH`
