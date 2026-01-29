@@ -7,26 +7,152 @@ import { onboardUserSchema, updateUserSchema } from '../validation/userSchemas.j
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User profile management
+ */
+
 // Middleware
 router.use(isAuthenticated);
 
-// Onboarding
-// Expects multipart/form-data: 'photo' (file) + other fields
+/**
+ * @swagger
+ * /users/onboard:
+ *   post:
+ *     summary: Onboard a new user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile picture
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               displayName:
+ *                 type: string
+ *               occupation:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               hobbies:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               interests:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               expertise:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               writingStyle:
+ *                 type: string
+ *                 enum: [professional, casual, technical, witty, academic, storyteller]
+ *               createOrganization:
+ *                 type: boolean
+ *               organizationName:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User onboarded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ */
 router.post('/onboard', 
     upload.single('photo'), 
     validateRequest(onboardUserSchema), 
     userController.onboardUser
 );
 
-// Profile Management
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
 router.get('/me', userController.getMe);
+
+/**
+ * @swagger
+ * /users/me:
+ *   patch:
+ *     summary: Update current user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *               occupation:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               preferences:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ */
 router.patch('/me', 
     validateRequest(updateUserSchema), 
     userController.updateUser
 );
 
-// User Management (ID based)
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profile found
+ *       404:
+ *         description: User not found
+ */
 router.get('/:id', userController.getUserById);
+
+export default router;
 
 // Status Management
 router.patch('/:id/deactivate', userController.deactivateUser);
