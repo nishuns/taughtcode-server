@@ -1,8 +1,34 @@
 import BaseAuthProvider from "./base.js";
+import crypto from 'crypto';
 
 class ApiKeyProvider extends BaseAuthProvider {
     constructor() {
         super();
+    }
+
+    /**
+     * Generate a new API Key
+     * Format: tk_{random_chars}
+     */
+    generate() {
+        const prefix = 'tk_';
+        const randomPart = crypto.randomBytes(32).toString('hex');
+        const plainTextKey = `${prefix}${randomPart}`;
+        const keyHash = this.hash(plainTextKey);
+        
+        return {
+            plainTextKey,
+            keyHash,
+            prefix
+        };
+    }
+
+    /**
+     * Hash the API Key for storage
+     * @param {string} key 
+     */
+    hash(key) {
+        return crypto.createHash('sha256').update(key).digest('hex');
     }
 
     async verifyToken(apiKey) {
