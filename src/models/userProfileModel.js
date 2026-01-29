@@ -16,10 +16,47 @@ const userProfileSchema = {
     },
     displayName: {
         type: String,
+        required: true,
         trim: true
     },
     photoURL: {
-        type: String
+        type: String,
+        trim: true
+    },
+    occupation: {
+        type: String,
+        trim: true
+    },
+    bio: {
+        type: String,
+        maxlength: 1000,
+        trim: true
+    },
+    hobbies: {
+        type: Array,
+        default: []
+    },
+    interests: {
+        type: Array,
+        default: []
+    },
+    expertise: {
+        type: Array,
+        default: [] // Areas the user is knowledgeable in
+    },
+    writingStyle: {
+        type: String,
+        enum: ['professional', 'casual', 'technical', 'witty', 'academic', 'storyteller'],
+        default: 'casual'
+    },
+    socialLinks: {
+        type: Object,
+        default: {
+            twitter: '',
+            linkedin: '',
+            github: '',
+            website: ''
+        }
     },
     role: {
         type: String,
@@ -29,9 +66,15 @@ const userProfileSchema = {
     preferences: {
         type: Object,
         default: {
-            theme: 'light',
-            notifications: true
+            theme: 'dark',
+            notifications: true,
+            language: 'en'
         }
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'suspended'],
+        default: 'active'
     },
     createdAt: {
         type: Date,
