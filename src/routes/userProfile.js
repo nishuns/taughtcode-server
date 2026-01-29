@@ -152,14 +152,87 @@ router.patch('/me',
  */
 router.get('/:id', userController.getUserById);
 
-export default router;
-
-// Status Management
+/**
+ * @swagger
+ * /users/{id}/deactivate:
+ *   patch:
+ *     summary: Deactivate user account (Soft delete)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deactivated
+ */
 router.patch('/:id/deactivate', userController.deactivateUser);
 
-// Admin Routes (Should have role check middleware in real app)
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: List all users (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of users
+ */
 router.get('/', userController.getAllUsers);
+
+/**
+ * @swagger
+ * /users/{id}/disable:
+ *   patch:
+ *     summary: Disable user account (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User disabled
+ */
 router.patch('/:id/disable', userController.disableUser);
+
+/**
+ * @swagger
+ * /users/{id}/activate:
+ *   patch:
+ *     summary: Activate user account (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User activated
+ */
 router.patch('/:id/activate', userController.activateUser);
 
 export default router;
