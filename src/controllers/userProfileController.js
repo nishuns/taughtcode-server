@@ -27,7 +27,7 @@ const onboardUser = async (req, res) => {
 
         // 2. Handle Organization
         let organizationId = profileData.organizationId || null;
-        
+
         // If creating a new organization during onboarding
         if (profileData.createOrganization && profileData.organizationName) {
             const newOrg = await Organization.create({
@@ -40,15 +40,12 @@ const onboardUser = async (req, res) => {
         }
 
         // 3. Create User Profile
-        const userData = {
+        const newUser = await userService.createUser(uid, {
             ...profileData,
-            uid,
             photoURL,
             organizationId,
             status: 'active'
-        };
-
-        const newUser = await userService.createUser(userData);
+        });
 
         res.status(201).json({
             success: true,
@@ -70,6 +67,15 @@ const onboardUser = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         const user = await userService.getUser(req.user.uid);
+        if (!user && req.user) {
+            return res.json({
+                success: true,
+                data: {
+                    ...req.user,
+                    isOnboarded: false
+                }
+            });
+        }
         res.json({ success: true, data: user });
     } catch (error) {
         res.status(404).json({ success: false, error: error.message });
@@ -81,7 +87,10 @@ const getMe = async (req, res) => {
  */
 const getUserById = async (req, res) => {
     try {
-        const user = await userService.getUser(req.params.id);
+        const user = await userService.getUserById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
         res.json({ success: true, data: user });
     } catch (error) {
         res.status(404).json({ success: false, error: error.message });
@@ -95,10 +104,10 @@ const updateUser = async (req, res) => {
     try {
         const { uid } = req.user;
         const updates = req.body;
-        
+
         // Prevent updating sensitive fields directly
         delete updates.uid;
-        delete updates.role; 
+        delete updates.role;
         delete updates.status;
 
         const updatedUser = await userService.updateUser(uid, updates);
@@ -133,7 +142,7 @@ const deactivateUser = async (req, res) => {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
 
-        await userService.updateUser(id, { status: 'deactivated' });
+        await userService.deleteUserById(id);
         res.json({ success: true, message: 'User deactivated' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -152,7 +161,7 @@ const disableUser = async (req, res) => {
         }
 
         const { id } = req.params;
-        await userService.updateUser(id, { status: 'disabled' });
+        await userService.updateUserById(id, { status: 'disabled' });
         res.json({ success: true, message: 'User disabled' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -170,7 +179,7 @@ const activateUser = async (req, res) => {
         }
 
         const { id } = req.params;
-        await userService.updateUser(id, { status: 'active' });
+        await userService.updateUserById(id, { status: 'active' });
         res.json({ success: true, message: 'User activated' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

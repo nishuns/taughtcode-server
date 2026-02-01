@@ -3,55 +3,172 @@ import logger from '../utils/logger.js';
 
 /**
  * Create a new user profile
- * @param {Object} userData 
+ * @param {string} uid 
+ * @param {Object} profileData 
  * @returns {Promise<Object>} Created user
  */
-async function createUser(userData) {
-    const existing = await User.findById(userData.uid);
-    if (existing) {
-        throw new Error('User already exists');
+async function createUser(uid, profileData) {
+    const existingProfile = await User.findOne({ uid });
+    
+    if (existingProfile) {
+        throw new Error('Profile already exists for this user');
     }
 
-    const payload = {
-        ...userData,
-        id: userData.uid,
-        status: userData.status || 'active',
-        role: userData.role || 'user'
-    };
+    const profile = await User.create({
+        uid,
+        ...profileData,
+        status: profileData.status || 'active',
+        role: profileData.role || 'user',
+        lastActiveAt: new Date()
+    });
 
-    logger.info(`UserService: Creating profile for ${userData.uid}`);
-    return await User.create(payload);
+    logger.debug('UserService: profile created', profile);
+
+    return profile;
 }
 
 /**
- * Get user by ID
+ * Get user profile by UID (field)
  * @param {string} uid 
  */
 async function getUser(uid) {
-    const user = await User.findById(uid);
-    if (!user) {
-        throw new Error('User not found');
+    const profile = await User.findOne({ uid });
+    
+    if (!profile || profile.status === 'deactivated') {
+        return null;
     }
-    return user;
+
+    return profile;
 }
 
 /**
- * Update user profile
- * @param {string} uid 
- * @param {Object} updates 
+ * Get user profile by Doc ID
+ * @param {string} id 
  */
-async function updateUser(uid, updates) {
-    logger.info(`UserService: Updating profile for ${uid}`);
-    return await User.update(uid, updates);
+async function getUserById(id) {
+    const profile = await User.findById(id);
+    
+    if (!profile || profile.status === 'deactivated') {
+        return null;
+    }
+
+    return profile;
 }
 
 /**
- * Delete user profile
+ * Update user profile by UID
+ * @param {string} uid 
+ * @param {Object} updateData 
+ */
+async function updateUser(uid, updateData) {
+    const profile = await User.findOne({ uid });
+    
+    if (!profile || profile.status === 'deactivated') {
+        throw new Error('Profile not found');
+    }
+
+    const updatedProfile = await User.findByIdAndUpdate(
+        profile.id,
+        {
+            ...updateData,
+            updatedAt: new Date()
+        },
+        { new: true }
+    );
+
+    return updatedProfile;
+}
+
+/**
+ * Update user profile by Doc ID
+ * @param {string} id 
+ * @param {Object} updateData 
+ */
+async function updateUserById(id, updateData) {
+    const profile = await User.findById(id);
+    
+    if (!profile || profile.status === 'deactivated') {
+        throw new Error('Profile not found');
+    }
+
+    const updatedProfile = await User.findByIdAndUpdate(
+        id,
+        {
+            ...updateData,
+            updatedAt: new Date()
+        },
+        { new: true }
+    );
+
+    return updatedProfile;
+}
+
+/**
+ * Deactivate user profile by UID
  * @param {string} uid 
  */
 async function deleteUser(uid) {
-    logger.info(`UserService: Deleting profile for ${uid}`);
-    return await User.delete(uid);
+    const profile = await User.findOne({ uid });
+    
+    if (!profile || profile.status === 'deactivated') {
+        throw new Error('Profile not found');
+    }
+
+    const deactivatedProfile = await User.findByIdAndUpdate(
+        profile.id,
+        {
+            status: 'deactivated',
+            updatedAt: new Date()
+        },
+        { new: true }
+    );
+
+    return deactivatedProfile;
+}
+
+/**
+ * Delete user profile by Doc ID
+ * @param {string} id 
+ */
+async function deleteUserById(id) {
+    const profile = await User.findById(id);
+    
+    if (!profile || profile.status === 'deactivated') {
+        throw new Error('Profile not found');
+    }
+
+    const deactivatedProfile = await User.findByIdAndUpdate(
+        id,
+        {
+            status: 'deactivated',
+            updatedAt: new Date()
+        },
+        { new: true }
+    );
+
+    return deactivatedProfile;
+}
+
+/**
+ * Update last active timestamp
+ * @param {string} uid 
+ */
+async function updateLastActive(uid) {
+    const profile = await User.findOne({ uid });
+    
+    if (!profile || profile.status === 'deactivated') {
+        return null;
+    }
+
+    const updatedProfile = await User.findByIdAndUpdate(
+        profile.id,
+        {
+            lastActiveAt: new Date()
+        },
+        { new: true }
+    );
+
+    return updatedProfile;
 }
 
 /**
@@ -65,17 +182,25 @@ async function isDisplayNameTaken(displayName) {
 
 /**
  * List users with filters
- * @param {Object} filters 
+ * @param {Object} query 
+ * @param {Object} options 
  */
-async function listUsers(filters = {}) {
-    return await User.find(filters);
+async function listUsers(query = {}, options = {}) {
+    return await User.find(
+        { ...query, status: 'active' },
+        options
+    );
 }
 
 export {
     createUser,
     getUser,
+    getUserById,
     updateUser,
+    updateUserById,
     deleteUser,
+    deleteUserById,
+    updateLastActive,
     isDisplayNameTaken,
     listUsers
 };
