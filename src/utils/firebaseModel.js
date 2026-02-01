@@ -334,3 +334,14 @@ class FirebaseModel {
         return { modifiedCount: snapshot.size }
     }
 
+    async aggregate(pipeline) {
+        console.warn('Aggregation pipeline is not supported in FirebaseModel. Returning empty result.');
+        return [];
+    }
+
+    async createIndex(indexSpec) {
+        return;
+    }
+}
+
+export default FirebaseModel;
