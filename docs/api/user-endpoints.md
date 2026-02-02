@@ -26,7 +26,9 @@ Retrieve the profile of the currently authenticated user.
 
 - **URL**: `/me`
 - **Method**: `GET`
-- **Success Response**: `200 OK` with User object.
+- **Success Response**: 
+    - `200 OK` with User object.
+    - If user exists in Auth but not in Database (not onboarded): `200 OK` with `{ ..., isOnboarded: false }`.
 
 ### Update Profile
 Update details of the current user.
@@ -43,6 +45,8 @@ Fetch a user's public profile details.
 
 - **URL**: `/:id`
 - **Method**: `GET`
+- **Success Response**: `200 OK` with User object.
+- **Error Response**: `404 Not Found` if user does not exist or is deactivated.
 
 ### List Users (Admin)
 Get a list of all users, optionally filtered.

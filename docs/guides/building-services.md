@@ -36,6 +36,7 @@ async function createPost(blogData) {
     logger.info(`Creating blog: ${payload.title}`);
 
     // 3. Database Interaction
+    // create() generates a new document with an auto-generated ID
     return await Blog.create(payload);
 }
 
@@ -46,10 +47,31 @@ async function getPublishedPosts() {
     return await Blog.find({ status: 'published' });
 }
 
+/**
+ * Update a post by its slug (using findOneAndUpdate pattern)
+ * @param {string} slug
+ * @param {Object} updateData
+ */
+async function updatePostBySlug(slug, updateData) {
+    // Find matching document and update it in one go
+    const updatedPost = await Blog.findOneAndUpdate(
+        { slug: slug },
+        { ...updateData, updatedAt: new Date() },
+        { new: true } // Return the updated document
+    );
+    
+    if (!updatedPost) {
+        throw new Error('Post not found');
+    }
+    
+    return updatedPost;
+}
+
 // Export functions directly
 export {
     createPost,
-    getPublishedPosts
+    getPublishedPosts,
+    updatePostBySlug
 };
 ```
 

@@ -8,7 +8,7 @@ We prefer instantiating models directly rather than extending classes. It's clea
 
 ### 1. Define the Schema
 
-We use Mongoose-style objects to define our data structure. Under the hood, this converts to **Joi** validation.
+We use Mongoose-style objects to define our data structure.
 
 ```javascript
 const blogSchema = {
@@ -29,6 +29,11 @@ const blogSchema = {
     author: {
         type: Object, // Nested object
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
     },
     publishedAt: {
         type: Date,
@@ -77,3 +82,5 @@ Blog.findPopular = async function() {
 ### Common Options
 - `required: true` - Field must exist.
 - `default: value` - Value to use if missing. Can be a function `() => new Date()`.
+- `validate: function(v)` - Custom validation function returning true/false.
+- `match: RegExp` - Regex for string format validation.
