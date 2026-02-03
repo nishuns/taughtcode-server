@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "a1b2c3d4-5678-90ef-ghij-klmnopqrst",
 		"name": "TaughtCode API",
-		"description": "API collection for TaughtCode server, including User Profile management.",
+		"description": "API collection for TaughtCode server, including User Profile and Article management.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -277,6 +277,176 @@
 								{
 									"key": "id",
 									"value": "USER_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Articles",
+			"item": [
+				{
+					"name": "Create Article",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/articles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Articles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/articles?status=published",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "published"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Article By Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/articles/:slug",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":slug"
+							],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "my-first-article"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Article",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Updated description\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/articles/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ARTICLE_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great article!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/articles/:id/reviews",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":id",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ARTICLE_ID"
 								}
 							]
 						}
