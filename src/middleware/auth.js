@@ -49,6 +49,35 @@ async function isAuthenticated(req, res, next) {
     }
 }
 
+/**
+ * Optional Authentication - Sets req.user if valid token provided, otherwise proceeds as guest
+ */
+async function optionalAuth(req, res, next) {
+    try {
+        const token = extractToken(req)
+
+        if (!token) {
+            return next(); // Guest
+        }
+
+        const isValid = await verifyAuth(token)
+
+        if (isValid) {
+            const user = await getUserByToken(token)
+            req.user = user
+            req.authType = 'token';
+        }
+        // If invalid token, we could either error or treat as guest. 
+        // Let's treat as guest to avoid blocking public content due to stale tokens, 
+        // but logging it might be good. For now, just proceed.
+        
+        next()
+    } catch (error) {
+        // If verification fails, proceed as guest
+        next()
+    }
+}
+
 function extractToken(req) {
     if (req.headers.authorization) {
         const parts = req.headers.authorization.split(' ')
@@ -64,4 +93,4 @@ function extractToken(req) {
     return null
 }
 
-export { isAuthenticated }
+export { isAuthenticated, optionalAuth }
