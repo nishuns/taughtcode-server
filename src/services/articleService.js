@@ -1,4 +1,4 @@
-import { Article, User } from '../models/index.js';
+import { Article, User, Review, Tag } from '../models/index.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -19,6 +19,12 @@ async function createArticle(authorId, articleData) {
         slug = `${slug}-${Math.random().toString(36).substring(7)}`;
     }
 
+    // 2. Handle Tags
+    if (articleData.tags && Array.isArray(articleData.tags)) {
+        // Process tags in parallel
+        await Promise.all(articleData.tags.map(tagName => Tag.findOrCreate(tagName)));
+    }
+
     const payload = {
         ...articleData,
         authorId,
@@ -30,6 +36,40 @@ async function createArticle(authorId, articleData) {
     const article = await Article.create(payload);
     logger.info(`Article created: ${article.id} by ${authorId}`);
     return article;
+}
+
+/**
+ * Add a review to an article
+ * @param {string} articleId 
+ * @param {string} userId 
+ * @param {Object} reviewData 
+ */
+async function addReview(articleId, userId, reviewData) {
+    // Check if article exists
+    const article = await Article.findById(articleId);
+    if (!article) throw new Error('Article not found');
+
+    // Create review
+    const review = await Review.create({
+        articleId,
+        userId,
+        rating: reviewData.rating,
+        comment: reviewData.comment
+    });
+
+    // Update Article stats
+    // Note: In a high-traffic app, this should be an aggregation or cloud function
+    const reviews = await Review.findByArticle(articleId);
+    const count = reviews.length;
+    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const averageRating = count > 0 ? totalRating / count : 0;
+
+    await Article.findByIdAndUpdate(articleId, {
+        reviewCount: count,
+        averageRating: parseFloat(averageRating.toFixed(1))
+    });
+
+    return review;
 }
 
 /**
@@ -154,5 +194,6 @@ export {
     getArticleBySlug,
     updateArticle,
     listArticles,
-    checkAccess
+    checkAccess,
+    addReview
 };

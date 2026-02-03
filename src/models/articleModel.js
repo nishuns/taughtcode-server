@@ -83,9 +83,15 @@ const articleSchema = {
         type: Number,
         default: 0
     },
-    reviews: {
-        type: Array, // Array of review objects: { userId, rating, comment, createdAt }
-        default: []
+    reviewCount: {
+        type: Number,
+        default: 0
+    },
+    averageRating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
     },
     
     createdAt: {
