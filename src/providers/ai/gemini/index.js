@@ -202,14 +202,15 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
-     * Generate an image using gemini-2.5-flash-image
+     * Generate an image using configured image model
      * @param {string} prompt 
      * @param {object} options 
      */
     async generateImage(prompt, options = {}) {
         try {
+            const model = this._getModelName(options.model || "image");
             const response = await this.ai.models.generateContent({
-                model: "gemini-2.5-flash-image",
+                model: model,
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
             });
 
@@ -228,7 +229,8 @@ class GeminiAIProvider extends BaseAIProvider {
             return {
                 success: true,
                 images: images,
-                provider: "gemini"
+                provider: "gemini",
+                model: model
             };
         } catch (error) {
             throw new Error(`Gemini Image Generation Error: ${error.message}`);
@@ -237,7 +239,7 @@ class GeminiAIProvider extends BaseAIProvider {
 
     /**
      * Helper method to resolve model name
-     * Supports: 'flash', 'pro', or full model name
+     * Supports: 'flash', 'pro', 'image' or full model name
      * @private
      */
     _getModelName(modelOption) {
@@ -245,13 +247,17 @@ class GeminiAIProvider extends BaseAIProvider {
             return this.config.defaultModel;
         }
 
-        // Check if it's a shorthand (flash/pro)
+        // Check if it's a shorthand (flash/pro/image)
         if (modelOption === "flash") {
             return this.config.models.flash;
         }
 
         if (modelOption === "pro") {
             return this.config.models.pro;
+        }
+
+        if (modelOption === "image") {
+            return this.config.models.image;
         }
 
         // Otherwise, assume it's a full model name
