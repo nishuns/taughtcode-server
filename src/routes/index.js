@@ -1,5 +1,6 @@
 import express from 'express';
 import userProfileRoutes from './userProfile.js';
+import articleRoutes from './articles.js';
 
 const router = express.Router();
 
@@ -11,6 +12,9 @@ const router = express.Router();
 
 // User Profile Routes
 router.use('/users', userProfileRoutes);
+
+// Article Routes
+router.use('/articles', articleRoutes);
 
 /**
  * @swagger

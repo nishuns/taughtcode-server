@@ -113,6 +113,7 @@ class GeminiAIProvider extends BaseAIProvider {
     async chat(messages, options = {}) {
         try {
             const model = this._getModelName(options.model);
+            console.log('xvf', model)
             const useTools = options.useTools && this.toolsEnabled;
 
             // Convert messages to Gemini format
@@ -202,8 +203,44 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
+     * Generate an image using configured image model
+     * @param {string} prompt 
+     * @param {object} options 
+     */
+    async generateImage(prompt, options = {}) {
+        try {
+            const model = this._getModelName(options.model || "image");
+            const response = await this.ai.models.generateContent({
+                model: model,
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            });
+
+            const images = [];
+            // Check if candidates and content exist
+            if (response.candidates && response.candidates[0]?.content?.parts) {
+                for (const part of response.candidates[0].content.parts) {
+                    if (part.inlineData) {
+                        images.push({
+                            inlineData: part.inlineData
+                        });
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                images: images,
+                provider: "gemini",
+                model: model
+            };
+        } catch (error) {
+            throw new Error(`Gemini Image Generation Error: ${error.message}`);
+        }
+    }
+
+    /**
      * Helper method to resolve model name
-     * Supports: 'flash', 'pro', or full model name
+     * Supports: 'flash', 'pro', 'image' or full model name
      * @private
      */
     _getModelName(modelOption) {
@@ -211,13 +248,17 @@ class GeminiAIProvider extends BaseAIProvider {
             return this.config.defaultModel;
         }
 
-        // Check if it's a shorthand (flash/pro)
+        // Check if it's a shorthand (flash/pro/image)
         if (modelOption === "flash") {
             return this.config.models.flash;
         }
 
         if (modelOption === "pro") {
             return this.config.models.pro;
+        }
+
+        if (modelOption === "image") {
+            return this.config.models.image;
         }
 
         // Otherwise, assume it's a full model name

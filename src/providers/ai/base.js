@@ -8,6 +8,10 @@ class BaseAIProvider {
     async chat(messages, options = {}) {
         throw new Error("chat method is not implemented");
     }
+
+    async generateImage(prompt, options = {}) {
+        throw new Error("generateImage method is not implemented");
+    }
 }
 
 export default BaseAIProvider;
