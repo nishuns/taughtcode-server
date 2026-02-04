@@ -202,6 +202,40 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
+     * Generate an image using gemini-2.5-flash-image
+     * @param {string} prompt 
+     * @param {object} options 
+     */
+    async generateImage(prompt, options = {}) {
+        try {
+            const response = await this.ai.models.generateContent({
+                model: "gemini-2.5-flash-image",
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            });
+
+            const images = [];
+            // Check if candidates and content exist
+            if (response.candidates && response.candidates[0]?.content?.parts) {
+                for (const part of response.candidates[0].content.parts) {
+                    if (part.inlineData) {
+                        images.push({
+                            inlineData: part.inlineData
+                        });
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                images: images,
+                provider: "gemini"
+            };
+        } catch (error) {
+            throw new Error(`Gemini Image Generation Error: ${error.message}`);
+        }
+    }
+
+    /**
      * Helper method to resolve model name
      * Supports: 'flash', 'pro', or full model name
      * @private

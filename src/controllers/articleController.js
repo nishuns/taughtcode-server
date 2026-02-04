@@ -104,10 +104,34 @@ const addReview = async (req, res) => {
     }
 };
 
+/**
+ * Generate an article using AI
+ */
+const generateArticle = async (req, res) => {
+    try {
+        const { uid } = req.user;
+        const { topic } = req.body;
+
+        if (!topic) {
+            return res.status(400).json({ success: false, error: 'Topic is required' });
+        }
+
+        const article = await articleService.generateArticleContent(uid, topic);
+
+        res.status(201).json({
+            success: true,
+            data: article
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 export {
     createArticle,
     getArticle,
     updateArticle,
     listArticles,
-    addReview
+    addReview,
+    generateArticle
 };

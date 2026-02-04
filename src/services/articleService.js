@@ -1,5 +1,91 @@
 import { Article, User, Review, Tag } from '../models/index.js';
 import logger from '../utils/logger.js';
+import * as aiService from './aiService.js';
+import * as storageService from './storageService.js';
+import { generateStructurePrompt, generateContentPrompt } from '../prompts/articlePrompts.js';
+
+/**
+ * Generate an article using AI
+ * @param {string} authorId
+ * @param {string} topic
+ */
+async function generateArticleContent(authorId, topic) {
+    logger.info(`ArticleService: Generating article for topic "${topic}"`);
+
+    // 1. Generate Structure
+    const structureResult = await aiService.generateText(generateStructurePrompt(topic), {
+        responseMimeType: 'application/json'
+    });
+    
+    let structure;
+    try {
+        structure = JSON.parse(structureResult.text);
+    } catch (e) {
+        // Fallback if AI didn't return strict JSON (try to find JSON block)
+        const match = structureResult.text.match(/\{[\s\S]*\}/);
+        if (match) {
+            structure = JSON.parse(match[0]);
+        } else {
+            throw new Error("Failed to generate valid article structure");
+        }
+    }
+
+    // 2. Generate and Upload Images
+    const imageUrls = {};
+    for (const section of structure.sections) {
+        if (section.imagePrompt) {
+            try {
+                const imageResult = await aiService.generateImage(section.imagePrompt);
+                if (imageResult.success && imageResult.images.length > 0) {
+                    const imgPart = imageResult.images[0];
+                    let buffer, mimeType;
+
+                    if (typeof imgPart === 'string') {
+                        // Handle URL (like placeholders or other providers)
+                        const response = await fetch(imgPart);
+                        const arrayBuffer = await response.arrayBuffer();
+                        buffer = Buffer.from(arrayBuffer);
+                        mimeType = response.headers.get('content-type') || 'image/png';
+                    } else if (imgPart.inlineData) {
+                        // Handle native Gemini inlineData (base64)
+                        buffer = Buffer.from(imgPart.inlineData.data, 'base64');
+                        mimeType = imgPart.inlineData.mimeType;
+                    }
+
+                    if (buffer) {
+                        // Upload to Storage
+                        const uploadResult = await storageService.uploadUserAsset(
+                            authorId,
+                            buffer,
+                            mimeType,
+                            'generated_images'
+                        );
+                        
+                        imageUrls[section.heading] = uploadResult.url;
+                    }
+                }
+            } catch (err) {
+                logger.warn(`Failed to generate/upload image for section "${section.heading}":`, err);
+            }
+        }
+    }
+
+    // 3. Generate Full Content
+    const contentResult = await aiService.generateText(generateContentPrompt(structure, imageUrls));
+    const content = contentResult.text;
+
+    // 4. Save Article
+    const articleData = {
+        title: structure.title,
+        description: structure.description,
+        content: content,
+        tags: structure.tags || [],
+        status: 'draft', // Safety first
+        access: 'free'
+    };
+
+    return await createArticle(authorId, articleData);
+}
 
 /**
  * Create a new article
@@ -195,5 +281,6 @@ export {
     updateArticle,
     listArticles,
     checkAccess,
-    addReview
+    addReview,
+    generateArticleContent
 };

@@ -39,6 +39,32 @@ router.post('/',
 
 /**
  * @swagger
+ * /articles/generate:
+ *   post:
+ *     summary: Generate an article using AI
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               topic:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Article generated and saved as draft
+ */
+router.post('/generate',
+    isAuthenticated,
+    articleController.generateArticle
+);
+
+/**
+ * @swagger
  * /articles:
  *   get:
  *     summary: List articles
