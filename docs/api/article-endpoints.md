@@ -6,6 +6,16 @@ Authentication: Bearer Token (Firebase ID Token) for creation/updates/reviews. O
 
 ## Article Management
 
+### Generate Article (AI)
+Generate a full article with structure, content, and images using AI.
+
+- **URL**: `/generate`
+- **Method**: `POST`
+- **Auth**: Required
+- **Body Parameters**:
+    - `topic` (String, Required): The topic to generate the article about.
+- **Success Response**: `201 Created` with the generated (draft) Article object.
+
 ### Create Article
 Create a new article draft.
 

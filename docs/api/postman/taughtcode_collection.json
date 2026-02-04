@@ -321,6 +321,39 @@
 					"response": []
 				},
 				{
+					"name": "Generate Article (AI)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/articles/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "List Articles",
 					"request": {
 						"method": "GET",
