@@ -20,4 +20,12 @@ async function chat(messages, options = {}) {
     }
 }
 
-export { generateText, chat };
+async function generateImage(prompt, options = {}) {
+    try {
+        return await ai.generateImage(prompt, options);
+    } catch (error) {
+        throw new Error(`AI Service Error: ${error.message}`);
+    }
+}
+
+export { generateText, chat, generateImage };

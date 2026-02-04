@@ -14,9 +14,10 @@ async function generateArticleContent(authorId, topic) {
 
     // 1. Generate Structure
     const structureResult = await aiService.generateText(generateStructurePrompt(topic), {
-        responseMimeType: 'application/json'
+        responseMimeType: 'application/json',
+        model: 'flash'
     });
-    
+
     let structure;
     try {
         structure = JSON.parse(structureResult.text);
@@ -60,7 +61,7 @@ async function generateArticleContent(authorId, topic) {
                             mimeType,
                             'generated_images'
                         );
-                        
+
                         imageUrls[section.heading] = uploadResult.url;
                     }
                 }
@@ -98,7 +99,7 @@ async function createArticle(authorId, articleData) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '');
-    
+
     // Check for collision and append random suffix if needed
     const existing = await Article.findBySlug(slug);
     if (existing) {
@@ -180,7 +181,7 @@ async function getArticleBySlug(slug, userId = null) {
 
     // Check Access
     const access = await checkAccess(article, userId);
-    
+
     if (access.granted) {
         return article;
     } else {
@@ -259,7 +260,7 @@ async function checkAccess(article, userId) {
 async function updateArticle(id, authorId, updates) {
     const article = await Article.findById(id);
     if (!article) throw new Error('Article not found');
-    
+
     if (article.authorId !== authorId) {
         throw new Error('Unauthorized');
     }

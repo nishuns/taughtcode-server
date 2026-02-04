@@ -113,6 +113,7 @@ class GeminiAIProvider extends BaseAIProvider {
     async chat(messages, options = {}) {
         try {
             const model = this._getModelName(options.model);
+            console.log('xvf', model)
             const useTools = options.useTools && this.toolsEnabled;
 
             // Convert messages to Gemini format

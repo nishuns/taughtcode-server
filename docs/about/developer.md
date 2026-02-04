@@ -1,7 +1,7 @@
 # About the Developer
 
 ## Nischay Sharma
-**Full Stack Developer | Architect | Educator**
+**AI Orchestrator | Architect | Educator**
 
 Hello! I am Nischay Sharma, the lead developer behind the TaughtCode Server. I specialize in building scalable backend systems, architecting cloud-native applications, and creating intuitive developer experiences.
 
