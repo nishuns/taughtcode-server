@@ -4,10 +4,10 @@ This document explains the prompt engineering strategy used to generate high-qua
 
 ## Overview
 
-The article generation process is a two-step pipeline designed to ensure structural integrity and content quality.
+The article generation process is a two-step pipeline designed to ensure structural integrity and content quality. It supports varying levels of detail via the `depth` parameter (`standard` vs `deep-dive`).
 
 1.  **Structure Generation**: The AI first plans the article skeleton (JSON).
-2.  **Content Generation**: The AI then fills in the content based on the plan (Markdown).
+2.  **Content Generation**: The AI then fills in the content based on the plan (Markdown/HTML).
 
 ## 1. Structure Generation Prompt
 
@@ -15,28 +15,18 @@ The article generation process is a two-step pipeline designed to ensure structu
 
 **Prompt Template**:
 ```javascript
-`You are an expert article writer and editor. Your task is to plan a comprehensive... topic: "${topic}".
+`You are an expert article writer... topic: "${topic}".
 
-Please provide the output in strict JSON format...:
-{
-  "title": "...",
-  "description": "...",
-  "tags": [...],
-  "sections": [
-    {
-      "heading": "...",
-      "contentBrief": "...",
-      "imagePrompt": "...",
-      "layout": "two-column" // "standard", "two-column", "hero", "quote-block"
-    }
-  ]
-}`
+**Mode: ${depth === 'deep-dive' ? "DEEP DIVE" : "Standard"}**
+// If deep-dive: "Aim for 8-12 comprehensive sections. Include advanced concepts..."
+
+Please provide the output in strict JSON format...`
 ```
 
 **Key Features**:
 -   **Strict JSON**: Ensures the output can be parsed programmatically.
--   **Layout Control**: The `layout` field dictates how the section is rendered (e.g., side-by-side text and image).
--   **Image Prompts**: Ask the AI to visualize each section, which drives the image generation step.
+-   **Layout Control**: The `layout` field dictates how the section is rendered.
+-   **Depth Control**: Adjusts section count and complexity based on user request.
 
 ## 2. Content Generation Prompt
 
@@ -44,25 +34,21 @@ Please provide the output in strict JSON format...:
 
 **Prompt Template**:
 ```javascript
-`You are an expert web content creator. Write a full... based on the following structure.
+`You are an expert web content creator...
 
 Structure: ...
 Image URLs: ...
 
 Instructions:
-1. Output HTML content inside <article>...
-2. **Layout Handling**:
-   - **two-column**: Use <div class="grid md:grid-cols-2 gap-8">...
-   - **hero**: Use full-width containers...
-3. Insert corresponding image URL...
-4. Apply Tailwind-like classes...`
+...
+// If deep-dive: "Do not be superficial. Each section must be substantial (300-500 words)..."
+...`
 ```
 
 **Key Features**:
 -   **Semantic HTML**: Outputs clean `<section>`, `<figure>`, `<h2>` tags.
--   **Responsive Layouts**: Directives to use CSS Grid/Flexbox classes for complex layouts like columns.
--   **Asset Integration**: Images are placed contextually based on the chosen layout.
-
+-   **Depth Control**: Enforces word count minimums and technical depth for "deep-dive" requests.
+-   **Asset Integration**: Images are placed contextually.
 ## Workflow
 
 1.  **User Input**: Topic received via API.
