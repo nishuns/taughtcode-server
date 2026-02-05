@@ -168,4 +168,27 @@ router.post('/:id/reviews',
     articleController.addReview
 );
 
+/**
+ * @swagger
+ * /articles/{id}/publish:
+ *   post:
+ *     summary: Publish article to documentation
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Article published
+ */
+router.post('/:id/publish',
+    isAuthenticated,
+    articleController.publishArticle
+);
+
 export default router;

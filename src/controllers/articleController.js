@@ -127,11 +127,35 @@ const generateArticle = async (req, res) => {
     }
 };
 
+/**
+ * Publish article to docs
+ */
+const publishArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { uid } = req.user;
+
+        const article = await articleService.publishArticle(id, uid);
+
+        res.json({
+            success: true,
+            data: article,
+            message: 'Article published to documentation'
+        });
+    } catch (error) {
+        if (error.message === 'Unauthorized') {
+            return res.status(403).json({ success: false, error: error.message });
+        }
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
 export {
     createArticle,
     getArticle,
     updateArticle,
     listArticles,
     addReview,
-    generateArticle
+    generateArticle,
+    publishArticle
 };

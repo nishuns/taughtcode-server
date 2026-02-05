@@ -62,6 +62,14 @@ Update an existing article. Only the author can update.
 - **Body Parameters**: Any writable Article field.
 - **Success Response**: `200 OK` with updated Article.
 
+### Publish Article
+Publish a draft article to the public documentation system.
+
+- **URL**: `/:id/publish`
+- **Method**: `POST`
+- **Auth**: Required (Author only)
+- **Success Response**: `200 OK` with published Article.
+
 ## Engagement
 
 ### Add Review

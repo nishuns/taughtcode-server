@@ -3,6 +3,51 @@ import logger from '../utils/logger.js';
 import * as aiService from './aiService.js';
 import * as storageService from './storageService.js';
 import { generateStructurePrompt, generateContentPrompt } from '../prompts/articlePrompts.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DOCS_ARTICLES_DIR = path.join(__dirname, '../../docs/articles');
+
+/**
+ * Publish an article to the documentation system
+ * @param {string} id 
+ * @param {string} authorId 
+ */
+async function publishArticle(id, authorId) {
+    const article = await Article.findById(id);
+    if (!article) throw new Error('Article not found');
+    
+    if (article.authorId !== authorId) {
+        throw new Error('Unauthorized');
+    }
+
+    // Ensure directory exists
+    await fs.mkdir(DOCS_ARTICLES_DIR, { recursive: true });
+
+    // Write file to docs
+    // Since content is HTML, we might wrap it in a div or just save as .md 
+    // expecting the docs renderer to handle HTML (which markdown usually supports)
+    // or save as .html if the docs service supports it.
+    // Assuming docs service reads .md, we'll wrap content in a markdown wrapper if needed or just raw.
+    // For better integration, let's add frontmatter-like title if our docs service supports parsing it, 
+    // or just prepend the Title.
+    
+    const fileContent = `# ${article.title}\n\n${article.content}`;
+    const filePath = path.join(DOCS_ARTICLES_DIR, `${article.slug}.md`);
+    
+    await fs.writeFile(filePath, fileContent, 'utf8');
+
+    // Update DB
+    const updated = await Article.findByIdAndUpdate(id, {
+        status: 'published',
+        publishedAt: new Date()
+    }, { new: true });
+
+    logger.info(`Article published: ${article.slug}`);
+    return updated;
+}
 
 /**
  * Generate an article using AI
@@ -283,5 +328,6 @@ export {
     listArticles,
     checkAccess,
     addReview,
-    generateArticleContent
+    generateArticleContent,
+    publishArticle
 };
