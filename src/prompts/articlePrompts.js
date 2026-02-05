@@ -10,18 +10,20 @@ Please provide the output in strict JSON format with the following structure:
     {
       "heading": "Introduction",
       "contentBrief": "Briefly introduce the topic...",
-      "imagePrompt": "A high-quality, photorealistic image describing..." (optional, null if no image needed)
+      "imagePrompt": "A high-quality, photorealistic image describing..." (optional, null if no image needed),
+      "layout": "standard" // Options: "standard", "two-column", "hero", "quote-block"
     },
     {
-      "heading": "Section 1 Heading",
+      "heading": "Core Concept",
       "contentBrief": "Details about section 1...",
-      "imagePrompt": "Description of an image illustrating this section..."
+      "imagePrompt": "Description of an image illustrating this section...",
+      "layout": "two-column"
     }
     // ... more sections
   ]
 }
 
-Ensure the image prompts are descriptive and suitable for an AI image generator.
+Ensure the image prompts are descriptive and suitable for an AI image generator. Vary the layout types to create a visually engaging blog post.
 `;
 
 export const generateContentPrompt = (structure, imageUrls) => `
@@ -38,18 +40,20 @@ ${JSON.stringify(imageUrls, null, 2)}
 
 Instructions:
 1. Output ONLY the HTML content that would go inside an <article> tag. Do not include <html>, <head>, or <body> tags.
-2. Use semantic HTML5 tags: <h2> for section headings, <p> for paragraphs, <section> to wrap logical parts, <ul>/<ol> for lists.
-3. For images, use a modern structure:
-   <figure class="my-6">
-     <img src="URL" alt="Description" class="rounded-xl shadow-lg w-full object-cover max-h-[500px]">
+2. Use semantic HTML5 tags.
+3. **Layout Handling**:
+   - **standard**: Standard flow. Image (if any) followed by text.
+   - **two-column**: Use <div class="grid md:grid-cols-2 gap-8 items-center my-12">. Put text in one column and the image (figure) in the other.
+   - **hero**: Full-width featured section. <div class="relative w-full h-[400px] mb-8 rounded-xl overflow-hidden"> with image as background or covered img, and text overlaid or below.
+   - **quote-block**: Stylish blockquote layout.
+4. For images, use:
+   <figure class="w-full">
+     <img src="URL" alt="Description" class="rounded-xl shadow-lg w-full object-cover">
      <figcaption class="text-center text-sm text-gray-500 mt-2 italic">Figure: Description</figcaption>
    </figure>
-4. Insert the corresponding image URL from the provided map at the start of each relevant section.
-5. Apply subtle inline styles or standard class names (assuming a Tailwind-like environment) to ensure the content looks professional:
-   - Use <p class="mb-4 leading-relaxed text-gray-800"> for paragraphs.
-   - Use <h2 class="text-2xl font-bold mt-8 mb-4 text-slate-900"> for headings.
-6. Expand significantly on the "contentBrief" to provide high-value, informative text.
-7. Do NOT output the JSON structure or any Markdown syntax.
+5. Insert the corresponding image URL from the provided map based on the section heading.
+6. Apply Tailwind-like classes for professional typography: <p class="mb-4 leading-relaxed text-gray-800">, <h2 class="text-3xl font-bold mt-12 mb-6 text-slate-900">.
+7. Expand significantly on the "contentBrief".
 `;
 
 export const generateTemplatePrompt = (topic, category) => `
