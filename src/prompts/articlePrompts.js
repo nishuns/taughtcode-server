@@ -43,3 +43,25 @@ Instructions:
 4. Use proper Markdown formatting (headers, lists, bold, italics) to make the article readable.
 5. Do NOT output the JSON structure again, just the final Markdown content.
 `;
+
+export const generateTemplatePrompt = (topic, category) => `
+You are an expert content strategist. Create a reusable **Article Template** for the category "${category}" focusing on "${topic}".
+
+The goal is to create a structure that can be used to generate multiple specific articles in this domain.
+
+Please provide the output in strict JSON format matching this structure:
+{
+  "name": "Template Name (e.g., 'Ultimate Guide to ${topic}')",
+  "description": "Description of what this template is for",
+  "category": "${category}",
+  "aiInstructions": "General instructions for the AI when using this template (e.g., 'Tone should be professional', 'Focus on practical examples')",
+  "structure": [
+    {
+      "heading": "Section Heading (Generic)",
+      "contentBrief": "Instructions on what this section should cover (e.g., 'Explain the core concept of...')",
+      "imagePrompt": "Description of a generic image for this section (optional)"
+    }
+    // ... 4-6 sections recommended
+  ]
+}
+`;
