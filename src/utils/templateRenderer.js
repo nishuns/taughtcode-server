@@ -55,7 +55,7 @@ async function renderDocPage({ title, content, currentPath = '', navigation = []
     const navHTML = buildNavigationHTML(navigation, currentPath);
 
     return renderTemplate('docs', {
-        title: `${title} - TaughtCode Documentation`,
+        title: `${title}`,
         content,
         navigation: navHTML
     });

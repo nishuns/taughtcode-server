@@ -14,6 +14,7 @@ Generate a full article with structure, content, and images using AI.
 - **Auth**: Required
 - **Body Parameters**:
     - `topic` (String, Required): The topic to generate the article about.
+    - `depth` (String, Optional): Level of detail. `standard` (default) or `deep-dive` (comprehensive).
 - **Success Response**: `201 Created` with the generated (draft) Article object.
 
 ### Create Article
@@ -61,6 +62,14 @@ Update an existing article. Only the author can update.
 - **Auth**: Required
 - **Body Parameters**: Any writable Article field.
 - **Success Response**: `200 OK` with updated Article.
+
+### Publish Article
+Publish a draft article to the public documentation system.
+
+- **URL**: `/:id/publish`
+- **Method**: `POST`
+- **Auth**: Required (Author only)
+- **Success Response**: `200 OK` with published Article.
 
 ## Engagement
 

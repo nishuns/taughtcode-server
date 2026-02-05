@@ -4,10 +4,10 @@ This document explains the prompt engineering strategy used to generate high-qua
 
 ## Overview
 
-The article generation process is a two-step pipeline designed to ensure structural integrity and content quality.
+The article generation process is a two-step pipeline designed to ensure structural integrity and content quality. It supports varying levels of detail via the `depth` parameter (`standard` vs `deep-dive`).
 
 1.  **Structure Generation**: The AI first plans the article skeleton (JSON).
-2.  **Content Generation**: The AI then fills in the content based on the plan (Markdown).
+2.  **Content Generation**: The AI then fills in the content based on the plan (Markdown/HTML).
 
 ## 1. Structure Generation Prompt
 
@@ -15,54 +15,40 @@ The article generation process is a two-step pipeline designed to ensure structu
 
 **Prompt Template**:
 ```javascript
-`You are an expert article writer and editor. Your task is to plan a comprehensive... topic: "${topic}".
+`You are an expert article writer... topic: "${topic}".
 
-Please provide the output in strict JSON format...:
-{
-  "title": "...",
-  "description": "...",
-  "tags": [...],
-  "sections": [
-    {
-      "heading": "...",
-      "contentBrief": "...",
-      "imagePrompt": "..." // Used for image generation step
-    }
-  ]
-}`
+**Mode: ${depth === 'deep-dive' ? "DEEP DIVE" : "Standard"}**
+// If deep-dive: "Aim for 8-12 comprehensive sections. Include advanced concepts..."
+
+Please provide the output in strict JSON format...`
 ```
 
 **Key Features**:
 -   **Strict JSON**: Ensures the output can be parsed programmatically.
--   **Image Prompts**: Ask the AI to visualize each section, which drives the image generation step.
--   **Content Briefs**: Provides a roadmap for the second step, ensuring the AI stays on topic.
+-   **Layout Control**: The `layout` field dictates how the section is rendered.
+-   **Depth Control**: Adjusts section count and complexity based on user request.
 
 ## 2. Content Generation Prompt
 
-**Goal**: To generate the final Markdown content, integrating the previously generated structure and images.
+**Goal**: To generate the final **Semantic HTML** content with embedded styling.
 
 **Prompt Template**:
 ```javascript
-`You are an expert technical writer. Write a full... based on the following structure.
+`You are an expert web content creator...
 
-Structure:
-${JSON.stringify(structure)}
-
-Image URLs (Map of Heading -> URL):
-${JSON.stringify(imageUrls)}
+Structure: ...
+Image URLs: ...
 
 Instructions:
-1. Write engaging... content...
-2. Use the "contentBrief"...
-3. Insert the corresponding image URL... using ![Alt](URL)...
-4. Use proper Markdown...`
+...
+// If deep-dive: "Do not be superficial. Each section must be substantial (300-500 words)..."
+...`
 ```
 
 **Key Features**:
--   **Context Injection**: We feed the *plan* back to the AI so it knows exactly what to write.
--   **Asset Integration**: We provide the URLs of the images (generated in between steps 1 and 2) mapped to headings, instructing the AI to place them contextually.
--   **Markdown Output**: Ensures the final result is ready for rendering on the frontend.
-
+-   **Semantic HTML**: Outputs clean `<section>`, `<figure>`, `<h2>` tags.
+-   **Depth Control**: Enforces word count minimums and technical depth for "deep-dive" requests.
+-   **Asset Integration**: Images are placed contextually.
 ## Workflow
 
 1.  **User Input**: Topic received via API.

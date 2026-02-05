@@ -333,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\"\n}",
+							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -447,6 +447,37 @@
 					"response": []
 				},
 				{
+					"name": "Publish Article",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/articles/:id/publish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":id",
+								"publish"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ARTICLE_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Add Review",
 					"request": {
 						"method": "POST",
@@ -495,66 +526,51 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// --- Configuration ---",
 					"const apiKey = pm.environment.get(\"firebase_api_key\");",
 					"const email = pm.environment.get(\"test_email\");",
 					"const password = pm.environment.get(\"test_password\");",
+					"const currentToken = pm.environment.get(\"auth_token\");",
+					"const tokenExpiry = pm.environment.get(\"token_expiry\");",
+					"const currentTime = Date.now();",
 					"",
-					"// Endpoint",
-					"const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,",
+					"const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;",
 					"",
-					"// --- Logic to Check Expiry --- ",
-					"const token = pm.environment.get(\"auth_token\");",
-					"const expiryTime = pm.environment.get(\"token_expiry\");",
-					"const currentTime = new Date().getTime();",
-					"",
-					"// Check if token exists and is still valid (with a 30-second buffer)",
-					"if (token && expiryTime && currentTime < expiryTime - 30000) {",
-					"    console.log(\"Firebase Auth: Using existing valid token.\");",
+					"// Check if token exists and is not expired (tokens typically last 1 hour)",
+					"if (currentToken && tokenExpiry && currentTime < tokenExpiry) {",
+					"    console.log(\"Using existing valid token\");",
 					"} else {",
-					"    // Token is missing or expired; fetch a new one",
-					"    console.log(\"Firebase Auth: Token missing or expired. Fetching new token...\");",
-					"",
-					"    if (!apiKey || !email || !password) {",
-					"        console.warn(\"Firebase Auth: Missing variables! Check 'firebase_api_key', 'test_email', and 'test_password'.\");",
-					"    } else {",
-					"        pm.sendRequest({",
-					"            url: authUrl,",
-					"            method: 'POST',",
-					"            header: {",
-					"                'Content-Type': 'application/json'",
-					"            },",
-					"            body: {",
-					"                mode: 'raw',",
-					"                raw: JSON.stringify({",
-					"                    email: email, ",
-					"                    password: password, ",
-					"                    returnSecureToken: true",
-					"                })",
+					"    console.log(\"Token missing or expired, fetching new token...\");",
+					"    ",
+					"    pm.sendRequest({",
+					"        url: authUrl,",
+					"        method: 'POST',",
+					"        header: {",
+					"            'Content-Type': 'application/json'",
+					"        },",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify({",
+					"                email: email,",
+					"                password: password,",
+					"                returnSecureToken: true",
+					"            })",
+					"        }",
+					"    }, function (err, res) {",
+					"        if (err) {",
+					"            console.error(\"Authentication error:\", err);",
+					"        } else {",
+					"            const jsonResponse = res.json();",
+					"            if (jsonResponse.idToken) {",
+					"                pm.environment.set(\"auth_token\", jsonResponse.idToken);",
+					"                // Set expiry to 55 minutes from now (token lasts 1 hour, refresh 5 min early)",
+					"                pm.environment.set(\"token_expiry\", currentTime + (55 * 60 * 1000));",
+					"                console.log(\"New token obtained and stored\");",
+					"            } else {",
+					"                console.error(\"Failed to get token:\", jsonResponse);",
 					"            }",
-				"        }, function (err, res) {",
-				"            if (err) {",
-				"                console.error(\"Firebase Auth Error:\", err);",
-				"            } else if (res.code !== 200) {",
-				"                console.error(\"Firebase Auth Failed:\", res.json());",
-				"                // Clear invalid token so we don't try to use it",
-				"                pm.environment.unset(\"auth_token\");",
-				"            } else {",
-				"                const response = res.json();",
-				"                const newToken = response.idToken;",
-				"                // 'expiresIn' is in seconds, convert to milliseconds and add to current time",
-				"                const expiresInSeconds = parseInt(response.expiresIn);",
-				"                const newExpiryTime = new Date().getTime() + (expiresInSeconds * 1000);",
-				"",
-				"                // Save to environment",
-				"                pm.environment.set(\"auth_token\", newToken);",
-				"                pm.environment.set(\"token_expiry\", newExpiryTime);",
-				"                ",
-				"                console.log(\"Firebase Auth: Login successful. Token refreshed.\");",
-			"            }",
-		"        });",
-	"    }",
-"}"
+					"        }",
+					"    });",
+					"}"
 				]
 			}
 		}

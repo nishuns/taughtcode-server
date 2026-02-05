@@ -2,7 +2,7 @@ import express from 'express';
 import * as articleController from '../controllers/articleController.js';
 import { isAuthenticated, optionalAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validateRequest.js';
-import { createArticleSchema, updateArticleSchema, addReviewSchema } from '../validation/articleSchemas.js';
+import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema } from '../validation/articleSchemas.js';
 
 const router = express.Router();
 
@@ -54,12 +54,17 @@ router.post('/',
  *             properties:
  *               topic:
  *                 type: string
+ *               depth:
+ *                 type: string
+ *                 enum: [standard, deep-dive]
+ *                 default: standard
  *     responses:
  *       201:
  *         description: Article generated and saved as draft
  */
 router.post('/generate',
     isAuthenticated,
+    validateRequest(generateArticleSchema),
     articleController.generateArticle
 );
 
@@ -166,6 +171,29 @@ router.post('/:id/reviews',
     isAuthenticated, 
     validateRequest(addReviewSchema), 
     articleController.addReview
+);
+
+/**
+ * @swagger
+ * /articles/{id}/publish:
+ *   post:
+ *     summary: Publish article to documentation
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Article published
+ */
+router.post('/:id/publish',
+    isAuthenticated,
+    articleController.publishArticle
 );
 
 export default router;

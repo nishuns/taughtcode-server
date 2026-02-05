@@ -1,5 +1,14 @@
-export const generateStructurePrompt = (topic) => `
+export const generateStructurePrompt = (topic, depth = 'standard') => {
+  const isDeepDive = depth === 'deep-dive';
+  const depthInstruction = isDeepDive 
+    ? "Create an extensive, in-depth outline for a long-form technical guide. Aim for 8-12 comprehensive sections. Include advanced concepts, edge cases, real-world scenarios, and deep technical analysis." 
+    : "Create a well-structured outline for a standard blog post. Aim for 4-6 sections.";
+
+  return `
 You are an expert article writer and editor. Your task is to plan a comprehensive, engaging, and well-structured article on the topic: "${topic}".
+
+**Mode: ${isDeepDive ? "DEEP DIVE / TECHNICAL GUIDE" : "Standard Article"}**
+${depthInstruction}
 
 Please provide the output in strict JSON format with the following structure:
 {
@@ -10,22 +19,40 @@ Please provide the output in strict JSON format with the following structure:
     {
       "heading": "Introduction",
       "contentBrief": "Briefly introduce the topic...",
-      "imagePrompt": "A high-quality, photorealistic image describing..." (optional, null if no image needed)
+      "imagePrompt": "A high-quality, photorealistic image describing..." (optional, null if no image needed),
+      "layout": "standard" // Options: "standard", "two-column", "hero", "quote-block"
     },
     {
-      "heading": "Section 1 Heading",
+      "heading": "Core Concept",
       "contentBrief": "Details about section 1...",
-      "imagePrompt": "Description of an image illustrating this section..."
+      "imagePrompt": "Description of an image illustrating this section...",
+      "layout": "two-column"
     }
     // ... more sections
   ]
 }
 
-Ensure the image prompts are descriptive and suitable for an AI image generator.
+Ensure the image prompts are descriptive and suitable for an AI image generator. Vary the layout types to create a visually engaging blog post.
 `;
+};
 
-export const generateContentPrompt = (structure, imageUrls) => `
-You are an expert technical writer. Write a full, detailed article in Markdown based on the following structure.
+export const generateContentPrompt = (structure, imageUrls, depth = 'standard') => {
+  const isDeepDive = depth === 'deep-dive';
+  const contentInstruction = isDeepDive
+    ? `
+    - **DEPTH REQUIREMENT**: This is a DEEP DIVE. Do not be superficial. 
+    - Each section must be substantial (300-500 words minimum per section where appropriate).
+    - Include code snippets, configuration examples, or mathematical proofs if relevant.
+    - Discuss trade-offs, pros/cons, and performance implications.
+    - Use "two-column" or "standard" layouts effectively to break up long text.
+    `
+    : `
+    - Keep sections concise and engaging (150-300 words).
+    - Focus on clarity and readability.
+    `;
+
+  return `
+You are an expert web content creator. Write a full, detailed article in clean, semantic **HTML** based on the following structure.
 
 Title: ${structure.title}
 Description: ${structure.description}
@@ -37,9 +64,43 @@ Image URLs (Map of Heading -> URL):
 ${JSON.stringify(imageUrls, null, 2)}
 
 Instructions:
-1. Write engaging, informative, and high-quality content for each section.
-2. Use the provided "contentBrief" as a guide but expand on it significantly.
-3. Insert the corresponding image URL from the provided map at the beginning or middle of each section where an image was planned. Use standard Markdown image syntax: ![Alt Text](URL).
-4. Use proper Markdown formatting (headers, lists, bold, italics) to make the article readable.
-5. Do NOT output the JSON structure again, just the final Markdown content.
+1. Output ONLY the HTML content that would go inside an <article> tag. Do not include <html>, <head>, or <body> tags.
+2. Use semantic HTML5 tags.
+3. **Layout Handling**:
+   - **standard**: Standard flow. Image (if any) followed by text.
+   - **two-column**: Use <div class="grid md:grid-cols-2 gap-8 items-center my-12">. Put text in one column and the image (figure) in the other.
+   - **hero**: Full-width featured section. <div class="relative w-full h-[400px] mb-8 rounded-xl overflow-hidden"> with image as background or covered img, and text overlaid or below.
+   - **quote-block**: Stylish blockquote layout.
+4. For images, use:
+   <figure class="w-full">
+     <img src="URL" alt="Description" class="rounded-xl shadow-lg w-full object-cover">
+     <figcaption class="text-center text-sm text-gray-500 mt-2 italic">Figure: Description</figcaption>
+   </figure>
+5. Insert the corresponding image URL from the provided map based on the section heading.
+6. Apply Tailwind-like classes for professional typography: <p class="mb-4 leading-relaxed text-gray-800">, <h2 class="text-3xl font-bold mt-12 mb-6 text-slate-900">.
+${contentInstruction}
+7. Do NOT output the JSON structure or any Markdown syntax.
+`;
+};
+
+export const generateTemplatePrompt = (topic, category) => `
+You are an expert content strategist. Create a reusable **Article Template** for the category "${category}" focusing on "${topic}".
+
+The goal is to create a structure that can be used to generate multiple specific articles in this domain.
+
+Please provide the output in strict JSON format matching this structure:
+{
+  "name": "Template Name (e.g., 'Ultimate Guide to ${topic}')",
+  "description": "Description of what this template is for",
+  "category": "${category}",
+  "aiInstructions": "General instructions for the AI when using this template (e.g., 'Tone should be professional', 'Focus on practical examples')",
+  "structure": [
+    {
+      "heading": "Section Heading (Generic)",
+      "contentBrief": "Instructions on what this section should cover (e.g., 'Explain the core concept of...')",
+      "imagePrompt": "Description of a generic image for this section (optional)"
+    }
+    // ... 4-6 sections recommended
+  ]
+}
 `;
