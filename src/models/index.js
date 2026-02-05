@@ -5,6 +5,7 @@ import apiKeyModel from './apiKeyModel.js';
 import articleModel from './articleModel.js';
 import reviewModel from './reviewModel.js';
 import tagModel from './tagModel.js';
+import articleTemplateModel from './articleTemplateModel.js';
 
 // Export specific models
 export const User = userProfileModel;
@@ -13,6 +14,7 @@ export const ApiKey = apiKeyModel;
 export const Article = articleModel;
 export const Review = reviewModel;
 export const Tag = tagModel;
+export const ArticleTemplate = articleTemplateModel;
 
 // Helper to create simple models on the fly
 export const createModel = (collectionName, schema = null) => {
