@@ -110,13 +110,13 @@ const addReview = async (req, res) => {
 const generateArticle = async (req, res) => {
     try {
         const { uid } = req.user;
-        const { topic } = req.body;
+        const { topic, depth } = req.body;
 
         if (!topic) {
             return res.status(400).json({ success: false, error: 'Topic is required' });
         }
 
-        const article = await articleService.generateArticleContent(uid, topic);
+        const article = await articleService.generateArticleContent(uid, topic, depth);
 
         res.status(201).json({
             success: true,

@@ -53,14 +53,14 @@ async function publishArticle(id, authorId) {
  * Generate an article using AI
  * @param {string} authorId
  * @param {string} topic
+ * @param {string} depth - 'standard' or 'deep-dive'
  */
-async function generateArticleContent(authorId, topic) {
-    logger.info(`ArticleService: Generating article for topic "${topic}"`);
+async function generateArticleContent(authorId, topic, depth = 'standard') {
+    logger.info(`ArticleService: Generating article for topic "${topic}" (Depth: ${depth})`);
 
     // 1. Generate Structure
-    const structureResult = await aiService.generateText(generateStructurePrompt(topic), {
-        responseMimeType: 'application/json',
-        model: 'flash'
+    const structureResult = await aiService.generateText(generateStructurePrompt(topic, depth), {
+        responseMimeType: 'application/json'
     });
 
     let structure;
@@ -117,7 +117,7 @@ async function generateArticleContent(authorId, topic) {
     }
 
     // 3. Generate Full Content
-    const contentResult = await aiService.generateText(generateContentPrompt(structure, imageUrls));
+    const contentResult = await aiService.generateText(generateContentPrompt(structure, imageUrls, depth));
     const content = contentResult.text;
 
     // 4. Save Article

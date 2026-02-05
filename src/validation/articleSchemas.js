@@ -37,3 +37,8 @@ export const addReviewSchema = Joi.object({
     rating: Joi.number().required().min(1).max(5),
     comment: Joi.string().max(1000).allow('')
 });
+
+export const generateArticleSchema = Joi.object({
+    topic: Joi.string().required().min(3).max(500),
+    depth: Joi.string().valid('standard', 'deep-dive').default('standard')
+});

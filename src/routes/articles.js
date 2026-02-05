@@ -2,7 +2,7 @@ import express from 'express';
 import * as articleController from '../controllers/articleController.js';
 import { isAuthenticated, optionalAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validateRequest.js';
-import { createArticleSchema, updateArticleSchema, addReviewSchema } from '../validation/articleSchemas.js';
+import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema } from '../validation/articleSchemas.js';
 
 const router = express.Router();
 
@@ -54,12 +54,17 @@ router.post('/',
  *             properties:
  *               topic:
  *                 type: string
+ *               depth:
+ *                 type: string
+ *                 enum: [standard, deep-dive]
+ *                 default: standard
  *     responses:
  *       201:
  *         description: Article generated and saved as draft
  */
 router.post('/generate',
     isAuthenticated,
+    validateRequest(generateArticleSchema),
     articleController.generateArticle
 );
 

@@ -333,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\"\n}",
+							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

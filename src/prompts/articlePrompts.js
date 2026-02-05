@@ -1,5 +1,14 @@
-export const generateStructurePrompt = (topic) => `
+export const generateStructurePrompt = (topic, depth = 'standard') => {
+  const isDeepDive = depth === 'deep-dive';
+  const depthInstruction = isDeepDive 
+    ? "Create an extensive, in-depth outline for a long-form technical guide. Aim for 8-12 comprehensive sections. Include advanced concepts, edge cases, real-world scenarios, and deep technical analysis." 
+    : "Create a well-structured outline for a standard blog post. Aim for 4-6 sections.";
+
+  return `
 You are an expert article writer and editor. Your task is to plan a comprehensive, engaging, and well-structured article on the topic: "${topic}".
+
+**Mode: ${isDeepDive ? "DEEP DIVE / TECHNICAL GUIDE" : "Standard Article"}**
+${depthInstruction}
 
 Please provide the output in strict JSON format with the following structure:
 {
@@ -25,8 +34,24 @@ Please provide the output in strict JSON format with the following structure:
 
 Ensure the image prompts are descriptive and suitable for an AI image generator. Vary the layout types to create a visually engaging blog post.
 `;
+};
 
-export const generateContentPrompt = (structure, imageUrls) => `
+export const generateContentPrompt = (structure, imageUrls, depth = 'standard') => {
+  const isDeepDive = depth === 'deep-dive';
+  const contentInstruction = isDeepDive
+    ? `
+    - **DEPTH REQUIREMENT**: This is a DEEP DIVE. Do not be superficial. 
+    - Each section must be substantial (300-500 words minimum per section where appropriate).
+    - Include code snippets, configuration examples, or mathematical proofs if relevant.
+    - Discuss trade-offs, pros/cons, and performance implications.
+    - Use "two-column" or "standard" layouts effectively to break up long text.
+    `
+    : `
+    - Keep sections concise and engaging (150-300 words).
+    - Focus on clarity and readability.
+    `;
+
+  return `
 You are an expert web content creator. Write a full, detailed article in clean, semantic **HTML** based on the following structure.
 
 Title: ${structure.title}
@@ -53,8 +78,10 @@ Instructions:
    </figure>
 5. Insert the corresponding image URL from the provided map based on the section heading.
 6. Apply Tailwind-like classes for professional typography: <p class="mb-4 leading-relaxed text-gray-800">, <h2 class="text-3xl font-bold mt-12 mb-6 text-slate-900">.
-7. Expand significantly on the "contentBrief".
+${contentInstruction}
+7. Do NOT output the JSON structure or any Markdown syntax.
 `;
+};
 
 export const generateTemplatePrompt = (topic, category) => `
 You are an expert content strategist. Create a reusable **Article Template** for the category "${category}" focusing on "${topic}".
