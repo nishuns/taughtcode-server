@@ -25,7 +25,7 @@ Ensure the image prompts are descriptive and suitable for an AI image generator.
 `;
 
 export const generateContentPrompt = (structure, imageUrls) => `
-You are an expert technical writer. Write a full, detailed article in Markdown based on the following structure.
+You are an expert web content creator. Write a full, detailed article in clean, semantic **HTML** based on the following structure.
 
 Title: ${structure.title}
 Description: ${structure.description}
@@ -37,11 +37,19 @@ Image URLs (Map of Heading -> URL):
 ${JSON.stringify(imageUrls, null, 2)}
 
 Instructions:
-1. Write engaging, informative, and high-quality content for each section.
-2. Use the provided "contentBrief" as a guide but expand on it significantly.
-3. Insert the corresponding image URL from the provided map at the beginning or middle of each section where an image was planned. Use standard Markdown image syntax: ![Alt Text](URL).
-4. Use proper Markdown formatting (headers, lists, bold, italics) to make the article readable.
-5. Do NOT output the JSON structure again, just the final Markdown content.
+1. Output ONLY the HTML content that would go inside an <article> tag. Do not include <html>, <head>, or <body> tags.
+2. Use semantic HTML5 tags: <h2> for section headings, <p> for paragraphs, <section> to wrap logical parts, <ul>/<ol> for lists.
+3. For images, use a modern structure:
+   <figure class="my-6">
+     <img src="URL" alt="Description" class="rounded-xl shadow-lg w-full object-cover max-h-[500px]">
+     <figcaption class="text-center text-sm text-gray-500 mt-2 italic">Figure: Description</figcaption>
+   </figure>
+4. Insert the corresponding image URL from the provided map at the start of each relevant section.
+5. Apply subtle inline styles or standard class names (assuming a Tailwind-like environment) to ensure the content looks professional:
+   - Use <p class="mb-4 leading-relaxed text-gray-800"> for paragraphs.
+   - Use <h2 class="text-2xl font-bold mt-8 mb-4 text-slate-900"> for headings.
+6. Expand significantly on the "contentBrief" to provide high-value, informative text.
+7. Do NOT output the JSON structure or any Markdown syntax.
 `;
 
 export const generateTemplatePrompt = (topic, category) => `
