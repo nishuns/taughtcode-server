@@ -26,7 +26,8 @@ Please provide the output in strict JSON format...:
     {
       "heading": "...",
       "contentBrief": "...",
-      "imagePrompt": "..." // Used for image generation step
+      "imagePrompt": "...",
+      "layout": "two-column" // "standard", "two-column", "hero", "quote-block"
     }
   ]
 }`
@@ -34,34 +35,33 @@ Please provide the output in strict JSON format...:
 
 **Key Features**:
 -   **Strict JSON**: Ensures the output can be parsed programmatically.
+-   **Layout Control**: The `layout` field dictates how the section is rendered (e.g., side-by-side text and image).
 -   **Image Prompts**: Ask the AI to visualize each section, which drives the image generation step.
--   **Content Briefs**: Provides a roadmap for the second step, ensuring the AI stays on topic.
 
 ## 2. Content Generation Prompt
 
-**Goal**: To generate the final Markdown content, integrating the previously generated structure and images.
+**Goal**: To generate the final **Semantic HTML** content with embedded styling.
 
 **Prompt Template**:
 ```javascript
-`You are an expert technical writer. Write a full... based on the following structure.
+`You are an expert web content creator. Write a full... based on the following structure.
 
-Structure:
-${JSON.stringify(structure)}
-
-Image URLs (Map of Heading -> URL):
-${JSON.stringify(imageUrls)}
+Structure: ...
+Image URLs: ...
 
 Instructions:
-1. Write engaging... content...
-2. Use the "contentBrief"...
-3. Insert the corresponding image URL... using ![Alt](URL)...
-4. Use proper Markdown...`
+1. Output HTML content inside <article>...
+2. **Layout Handling**:
+   - **two-column**: Use <div class="grid md:grid-cols-2 gap-8">...
+   - **hero**: Use full-width containers...
+3. Insert corresponding image URL...
+4. Apply Tailwind-like classes...`
 ```
 
 **Key Features**:
--   **Context Injection**: We feed the *plan* back to the AI so it knows exactly what to write.
--   **Asset Integration**: We provide the URLs of the images (generated in between steps 1 and 2) mapped to headings, instructing the AI to place them contextually.
--   **Markdown Output**: Ensures the final result is ready for rendering on the frontend.
+-   **Semantic HTML**: Outputs clean `<section>`, `<figure>`, `<h2>` tags.
+-   **Responsive Layouts**: Directives to use CSS Grid/Flexbox classes for complex layouts like columns.
+-   **Asset Integration**: Images are placed contextually based on the chosen layout.
 
 ## Workflow
 
