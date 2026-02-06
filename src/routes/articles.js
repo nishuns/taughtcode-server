@@ -1,5 +1,6 @@
 import express from 'express';
 import * as articleController from '../controllers/articleController.js';
+import * as templateController from '../controllers/articleTemplateController.js';
 import { isAuthenticated, optionalAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema } from '../validation/articleSchemas.js';
@@ -12,6 +13,69 @@ const router = express.Router();
  *   name: Articles
  *   description: Article management and monetization
  */
+
+// --- Templates ---
+
+/**
+ * @swagger
+ * /articles/templates/generate:
+ *   post:
+ *     summary: Generate a reusable article template using AI
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               topic:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Template created
+ */
+router.post('/templates/generate',
+    isAuthenticated,
+    templateController.generateTemplate
+);
+
+/**
+ * @swagger
+ * /articles/templates:
+ *   get:
+ *     summary: List all article templates
+ *     tags: [Articles]
+ *     responses:
+ *       200:
+ *         description: List of templates
+ */
+router.get('/templates', templateController.listTemplates);
+
+/**
+ * @swagger
+ * /articles/templates/{slug}:
+ *   get:
+ *     summary: Get template by slug
+ *     tags: [Articles]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Template data
+ */
+router.get('/templates/:slug', templateController.getTemplateBySlug);
+
+
+// --- Articles ---
 
 /**
  * @swagger
