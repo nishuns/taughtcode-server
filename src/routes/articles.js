@@ -58,6 +58,9 @@ router.post('/',
  *                 type: string
  *                 enum: [standard, deep-dive]
  *                 default: standard
+ *               instructions:
+ *                 type: string
+ *                 description: Custom instructions for the AI (e.g., specific tone, structure preferences)
  *     responses:
  *       201:
  *         description: Article generated and saved as draft

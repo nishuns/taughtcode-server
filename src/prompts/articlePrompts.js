@@ -1,14 +1,17 @@
-export const generateStructurePrompt = (topic, depth = 'standard') => {
+export const generateStructurePrompt = (topic, depth = 'standard', instructions = '') => {
   const isDeepDive = depth === 'deep-dive';
   const depthInstruction = isDeepDive 
     ? "Create an extensive, in-depth outline for a long-form technical guide. Aim for 8-12 comprehensive sections. Include advanced concepts, edge cases, real-world scenarios, and deep technical analysis." 
     : "Create a well-structured outline for a standard blog post. Aim for 4-6 sections.";
+
+  const customInstruction = instructions ? `\n**User Instructions**: ${instructions}\n` : '';
 
   return `
 You are an expert article writer and editor. Your task is to plan a comprehensive, engaging, and well-structured article on the topic: "${topic}".
 
 **Mode: ${isDeepDive ? "DEEP DIVE / TECHNICAL GUIDE" : "Standard Article"}**
 ${depthInstruction}
+${customInstruction}
 
 Please provide the output in strict JSON format with the following structure:
 {

@@ -40,5 +40,6 @@ export const addReviewSchema = Joi.object({
 
 export const generateArticleSchema = Joi.object({
     topic: Joi.string().required().min(3).max(500),
-    depth: Joi.string().valid('standard', 'deep-dive').default('standard')
+    depth: Joi.string().valid('standard', 'deep-dive').default('standard'),
+    instructions: Joi.string().max(1000).allow('')
 });
