@@ -1,14 +1,17 @@
-export const generateStructurePrompt = (topic, depth = 'standard') => {
+export const generateStructurePrompt = (topic, depth = 'standard', instructions = '') => {
   const isDeepDive = depth === 'deep-dive';
   const depthInstruction = isDeepDive 
     ? "Create an extensive, in-depth outline for a long-form technical guide. Aim for 8-12 comprehensive sections. Include advanced concepts, edge cases, real-world scenarios, and deep technical analysis." 
     : "Create a well-structured outline for a standard blog post. Aim for 4-6 sections.";
+
+  const customInstruction = instructions ? `\n**User Instructions**: ${instructions}\n` : '';
 
   return `
 You are an expert article writer and editor. Your task is to plan a comprehensive, engaging, and well-structured article on the topic: "${topic}".
 
 **Mode: ${isDeepDive ? "DEEP DIVE / TECHNICAL GUIDE" : "Standard Article"}**
 ${depthInstruction}
+${customInstruction}
 
 Please provide the output in strict JSON format with the following structure:
 {
@@ -78,8 +81,9 @@ Instructions:
    </figure>
 5. Insert the corresponding image URL from the provided map based on the section heading.
 6. Apply Tailwind-like classes for professional typography: <p class="mb-4 leading-relaxed text-gray-800">, <h2 class="text-3xl font-bold mt-12 mb-6 text-slate-900">.
+7. **Styling Constraint**: Do NOT apply background colors (e.g., \`bg-white\`, \`bg-gray-50\`) to the main sections, divs, or the article container. The content must use the default background of the hosting application to support light/dark modes seamlessly.
 ${contentInstruction}
-7. Do NOT output the JSON structure or any Markdown syntax.
+8. Do NOT output the JSON structure or any Markdown syntax.
 `;
 };
 

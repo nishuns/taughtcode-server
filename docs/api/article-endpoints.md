@@ -15,6 +15,7 @@ Generate a full article with structure, content, and images using AI.
 - **Body Parameters**:
     - `topic` (String, Required): The topic to generate the article about.
     - `depth` (String, Optional): Level of detail. `standard` (default) or `deep-dive` (comprehensive).
+    - `instructions` (String, Optional): Custom instructions for structure, tone, or specific requirements (max 1000 chars).
 - **Success Response**: `201 Created` with the generated (draft) Article object.
 
 ### Create Article

@@ -333,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\"\n}",
+							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\",\n    \"instructions\": \"Focus on scalability challenges\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -512,6 +512,63 @@
 									"key": "id",
 									"value": "ARTICLE_ID"
 								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Templates",
+			"item": [
+				{
+					"name": "Generate Template (AI)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"topic\": \"Machine Learning\",\n    \"category\": \"tutorial\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/articles/templates/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								"templates",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Templates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/articles/templates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								"templates"
 							]
 						}
 					},
