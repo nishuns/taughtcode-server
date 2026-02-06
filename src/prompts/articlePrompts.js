@@ -78,8 +78,9 @@ Instructions:
    </figure>
 5. Insert the corresponding image URL from the provided map based on the section heading.
 6. Apply Tailwind-like classes for professional typography: <p class="mb-4 leading-relaxed text-gray-800">, <h2 class="text-3xl font-bold mt-12 mb-6 text-slate-900">.
+7. **Styling Constraint**: Do NOT apply background colors (e.g., `bg-white`, `bg-gray-50`) to the main sections, divs, or the article container. The content must use the default background of the hosting application to support light/dark modes seamlessly.
 ${contentInstruction}
-7. Do NOT output the JSON structure or any Markdown syntax.
+8. Do NOT output the JSON structure or any Markdown syntax.
 `;
 };
 
