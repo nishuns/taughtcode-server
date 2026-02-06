@@ -118,7 +118,10 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
     }
 
     // 3. Generate Full Content
-    const contentResult = await aiService.generateText(generateContentPrompt(structure, imageUrls, depth));
+    const contentResult = await aiService.generateText(
+        generateContentPrompt(structure, imageUrls, depth),
+        { model: 'pro' }
+    );
     const content = contentResult.text;
 
     // 4. Save Article
