@@ -7,7 +7,7 @@ Authentication: Bearer Token (Firebase ID Token) for creation/updates/reviews. O
 ## Article Management
 
 ### Generate Article (AI)
-Generate a full article with structure, content, and images using AI.
+Generate a full article with structure, content, and images using AI. **(Async Job)**
 
 - **URL**: `/generate`
 - **Method**: `POST`
@@ -15,8 +15,19 @@ Generate a full article with structure, content, and images using AI.
 - **Body Parameters**:
     - `topic` (String, Required): The topic to generate the article about.
     - `depth` (String, Optional): Level of detail. `standard` (default) or `deep-dive` (comprehensive).
-    - `instructions` (String, Optional): Custom instructions for structure, tone, or specific requirements (max 1000 chars).
-- **Success Response**: `201 Created` with the generated (draft) Article object.
+    - `instructions` (String, Optional): Custom instructions.
+- **Success Response**: `202 Accepted`
+    ```json
+    {
+      "success": true,
+      "data": {
+        "jobId": "...",
+        "status": "queued",
+        "message": "Request accepted for background processing"
+      }
+    }
+    ```
+    *Poll `/api/v1/jobs/:id` for result.*
 
 ### Create Article
 Create a new article draft.

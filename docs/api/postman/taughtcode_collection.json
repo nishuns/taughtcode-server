@@ -575,6 +575,41 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "Get Job Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/jobs/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"jobs",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "JOB_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
