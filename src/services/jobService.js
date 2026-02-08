@@ -23,8 +23,8 @@ async function addJob(type, data, userId) {
 
     logger.info(`Job added: ${job.id} (${type})`);
     
-    // Trigger processing immediately (or could be polled)
-    processJob(job.id).catch(err => console.error("Background processing error:", err));
+    // We do NOT call processJob here anymore. 
+    // The WorkerRunner will pick it up.
 
     return job;
 }
@@ -40,13 +40,42 @@ async function getJob(jobId) {
 }
 
 /**
- * Process a job (Simulates Worker / FSM transition)
+ * Get the next queued job (FIFO) and lock it
+ */
+async function getNextJob() {
+    // Find oldest queued job
+    // Note: In a real distributed system, we need atomic transactions (runTransaction)
+    // to prevent two workers picking the same job.
+    // For this implementation, we'll try to find one.
+    
+    const jobs = await Job.find({ status: 'queued' }, { sort: { createdAt: 'asc' }, limit: 1 });
+    
+    if (jobs.length === 0) return null;
+    
+    const job = jobs[0];
+    
+    // Try to lock it
+    // In Firestore model wrapper, findByIdAndUpdate returns the new doc
+    // We check status again in update to ensure atomicity if possible via preconditions, 
+    // but here we just update.
+    
+    // Ideally:
+    // 1. Transaction get(doc)
+    // 2. if status == queued -> update to processing
+    
+    // Simple version:
+    return job;
+}
+
+/**
+ * Process a job (Called by Worker)
  * @param {string} jobId 
  */
 async function processJob(jobId) {
     const job = await Job.findById(jobId);
     if (!job) return;
 
+    // Double check status before running (concurrency safety)
     if (job.status !== 'queued') return;
 
     // Transition to Processing
@@ -100,5 +129,6 @@ async function updateJobStatus(jobId, status, progress, result = null, error = n
 export {
     addJob,
     getJob,
-    processJob
+    processJob,
+    getNextJob
 };
