@@ -6,8 +6,12 @@ import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import 'dotenv/config';
+import initNotificationHandler from './services/notificationHandler.js/index.js';
 
 const app = express();
+
+// Initialize Notifications
+initNotificationHandler();
 
 // Security middleware
 app.use(helmet({

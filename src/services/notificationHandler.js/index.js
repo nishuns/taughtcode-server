@@ -1,16 +1,21 @@
-import { NOTIFICATION_TYPES } from '../../config/notifications.js';
-// import { orgInviteHandler } from './orgInvite.js';
+import { jobEvents } from '../jobService.js';
+import logger from '../../utils/logger.js';
 
-const handlers = {
-    // [NOTIFICATION_TYPES.ORG_INVITE]: orgInviteHandler,
-    // Add other handlers here as they are implemented
-};
+// Subscribe to job events
+jobEvents.on('statusUpdate', (job) => {
+    logger.log(`🔔 Notification: Job ${job.id} is now ${job.status}`);
+    
+    if (job.status === 'completed') {
+        // Here we would push a notification to the user via WebSocket or Push Notification
+        // notifying them that their "Order" (Job) is ready.
+        logger.log(`✅ Success! User ${job.userId} can now check their result.`);
+        // Example: sendPushNotification(job.userId, "Your article is ready!");
+    } else if (job.status === 'failed') {
+        logger.error(`❌ Job ${job.id} failed: ${job.error}`);
+        // Example: sendPushNotification(job.userId, "Your job failed. Please try again.");
+    }
+});
 
-/**
- * Get handler for a specific notification type
- * @param {string} type 
- * @returns {Object|null} Handler object or null
- */
-export const getHandler = (type) => {
-    return handlers[type] || null;
-};
+export default function initNotificationHandler() {
+    logger.info('Notification Handler Initialized');
+}

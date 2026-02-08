@@ -1,6 +1,7 @@
 import express from 'express';
 import userProfileRoutes from './userProfile.js';
 import articleRoutes from './articles.js';
+import jobRoutes from './jobs.js';
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.use('/users', userProfileRoutes);
 
 // Article Routes
 router.use('/articles', articleRoutes);
+
+// Job Routes
+router.use('/jobs', jobRoutes);
 
 /**
  * @swagger
