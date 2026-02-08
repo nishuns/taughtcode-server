@@ -3,6 +3,7 @@ import * as articleController from '../controllers/articleController.js';
 import * as templateController from '../controllers/articleTemplateController.js';
 import { isAuthenticated, optionalAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validateRequest.js';
+import { enqueueJob } from '../middleware/jobMiddleware.js';
 import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema } from '../validation/articleSchemas.js';
 
 const router = express.Router();
@@ -20,7 +21,7 @@ const router = express.Router();
  * @swagger
  * /articles/templates/generate:
  *   post:
- *     summary: Generate a reusable article template using AI
+ *     summary: Generate a reusable article template using AI (Async Job)
  *     tags: [Articles]
  *     security:
  *       - bearerAuth: []
@@ -36,12 +37,12 @@ const router = express.Router();
  *               category:
  *                 type: string
  *     responses:
- *       201:
- *         description: Template created
+ *       202:
+ *         description: Job accepted
  */
 router.post('/templates/generate',
     isAuthenticated,
-    templateController.generateTemplate
+    enqueueJob('template-generation')
 );
 
 /**
@@ -105,7 +106,7 @@ router.post('/',
  * @swagger
  * /articles/generate:
  *   post:
- *     summary: Generate an article using AI
+ *     summary: Generate an article using AI (Async Job)
  *     tags: [Articles]
  *     security:
  *       - bearerAuth: []
@@ -126,13 +127,13 @@ router.post('/',
  *                 type: string
  *                 description: Custom instructions for the AI (e.g., specific tone, structure preferences)
  *     responses:
- *       201:
- *         description: Article generated and saved as draft
+ *       202:
+ *         description: Job accepted
  */
 router.post('/generate',
     isAuthenticated,
     validateRequest(generateArticleSchema),
-    articleController.generateArticle
+    enqueueJob('article-generation')
 );
 
 /**

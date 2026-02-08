@@ -3,6 +3,7 @@ import logger from '../utils/logger.js';
 import * as aiService from './aiService.js';
 import * as storageService from './storageService.js';
 import { generateStructurePrompt, generateContentPrompt } from '../prompts/articlePrompts.js';
+import { minifyHTML } from '../utils/htmlMinifier.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -26,15 +27,13 @@ async function publishArticle(id, authorId) {
     // Ensure directory exists
     await fs.mkdir(DOCS_ARTICLES_DIR, { recursive: true });
 
-    // Write file to docs
-    // Since content is HTML, we might wrap it in a div or just save as .md 
-    // expecting the docs renderer to handle HTML (which markdown usually supports)
-    // or save as .html if the docs service supports it.
-    // Assuming docs service reads .md, we'll wrap content in a markdown wrapper if needed or just raw.
+    // Minify HTML content for publication
+    const minifiedContent = minifyHTML(article.content);
+    
     // For better integration, let's add frontmatter-like title if our docs service supports parsing it, 
     // or just prepend the Title.
     
-    const fileContent = `# ${article.title}\n\n${article.content}`;
+    const fileContent = `# ${article.title}\n${minifiedContent}`;
     const filePath = path.join(DOCS_ARTICLES_DIR, `${article.slug}.md`);
     
     await fs.writeFile(filePath, fileContent, 'utf8');
