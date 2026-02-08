@@ -1,6 +1,7 @@
 import { Job } from '../models/index.js';
 import logger from '../utils/logger.js';
 import { EventEmitter } from 'events';
+import { getWorkerFunction } from '../workers/jobRegistry.js';
 
 // Event Emitter for notifications
 export const jobEvents = new EventEmitter();
@@ -52,24 +53,16 @@ async function processJob(jobId) {
     await updateJobStatus(jobId, 'processing', 10);
 
     try {
-        logger.info(`Processing job ${jobId}...`);
+        logger.info(`Processing job ${jobId} (${job.type})...`);
         
-        let result;
-        
-        // --- Worker Logic Router ---
-        // Ideally this delegates to specific worker functions
-        if (job.type === 'article-generation') {
-            const { generateArticleContent } = await import('./articleService.js');
-            // Mocking the behavior for the 'worker' concept: 
-            // In a real scenario, this runs in a worker thread.
-            const { authorId, topic, depth, instructions } = job.data;
-            
-            // Pass job reference if we want progress updates from within the service
-            // For now, we await the result
-            result = await generateArticleContent(authorId, topic, depth, instructions);
-        } else {
-            throw new Error(`Unknown job type: ${job.type}`);
+        const workerFn = getWorkerFunction(job.type);
+        if (!workerFn) {
+            throw new Error(`No worker registered for job type: ${job.type}`);
         }
+
+        // Execute Worker Function
+        // Convention: fn(userId, data)
+        const result = await workerFn(job.userId, job.data);
         
         // Transition to Completed
         await updateJobStatus(jobId, 'completed', 100, result);
