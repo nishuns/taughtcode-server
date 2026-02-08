@@ -34,7 +34,7 @@ async function publishArticle(id, authorId) {
     // For better integration, let's add frontmatter-like title if our docs service supports parsing it, 
     // or just prepend the Title.
     
-    const fileContent = `# ${article.title}\n\n${article.content}`;
+    const fileContent = `# ${article.title}\n${article.content.trim()}`;
     const filePath = path.join(DOCS_ARTICLES_DIR, `${article.slug}.md`);
     
     await fs.writeFile(filePath, fileContent, 'utf8');
