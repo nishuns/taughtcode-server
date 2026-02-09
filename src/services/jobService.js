@@ -2,17 +2,19 @@ import { Job } from '../models/index.js';
 import logger from '../utils/logger.js';
 import { EventEmitter } from 'events';
 import { getWorkerFunction } from '../workers/jobRegistry.js';
+import { jobQueue } from '../workers/queueFactory.js';
 
 // Event Emitter for notifications
 export const jobEvents = new EventEmitter();
 
 /**
- * Add a job to the queue
+ * Add a job to the queue (Firestore + BullMQ)
  * @param {string} type - Job type (e.g., 'article-generation')
  * @param {Object} data - Payload
  * @param {string} userId - User initiating the job
  */
 async function addJob(type, data, userId) {
+    // 1. Persist in Firestore (Source of Truth)
     const job = await Job.create({
         type,
         data,
@@ -21,10 +23,14 @@ async function addJob(type, data, userId) {
         progress: 0
     });
 
-    logger.info(`Job added: ${job.id} (${type})`);
+    logger.info(`Job persisted: ${job.id} (${type})`);
     
-    // We do NOT call processJob here anymore. 
-    // The WorkerRunner will pick it up.
+    // 2. Push to BullMQ (Execution Trigger)
+    await jobQueue.add(type, {
+        firestoreJobId: job.id,
+        type,
+        ...data
+    });
 
     return job;
 }
@@ -40,34 +46,6 @@ async function getJob(jobId) {
 }
 
 /**
- * Get the next queued job (FIFO) and lock it
- */
-async function getNextJob() {
-    // Find oldest queued job
-    // Note: In a real distributed system, we need atomic transactions (runTransaction)
-    // to prevent two workers picking the same job.
-    // For this implementation, we'll try to find one.
-    
-    const jobs = await Job.find({ status: 'queued' }, { sort: { createdAt: 'asc' }, limit: 1 });
-    
-    if (jobs.length === 0) return null;
-    
-    const job = jobs[0];
-    
-    // Try to lock it
-    // In Firestore model wrapper, findByIdAndUpdate returns the new doc
-    // We check status again in update to ensure atomicity if possible via preconditions, 
-    // but here we just update.
-    
-    // Ideally:
-    // 1. Transaction get(doc)
-    // 2. if status == queued -> update to processing
-    
-    // Simple version:
-    return job;
-}
-
-/**
  * Process a job (Called by Worker)
  * @param {string} jobId 
  */
@@ -76,7 +54,8 @@ async function processJob(jobId) {
     if (!job) return;
 
     // Double check status before running (concurrency safety)
-    if (job.status !== 'queued') return;
+    // Although BullMQ handles concurrency, this prevents reprocessing if manually triggered
+    if (job.status !== 'queued' && job.status !== 'failed') return; 
 
     // Transition to Processing
     await updateJobStatus(jobId, 'processing', 10);
@@ -100,6 +79,7 @@ async function processJob(jobId) {
         logger.error(`Job ${jobId} failed:`, error);
         // Transition to Failed
         await updateJobStatus(jobId, 'failed', 0, null, error.message);
+        throw error; // Rethrow so BullMQ knows it failed
     }
 }
 
@@ -129,6 +109,5 @@ async function updateJobStatus(jobId, status, progress, result = null, error = n
 export {
     addJob,
     getJob,
-    processJob,
-    getNextJob
+    processJob
 };

@@ -7,15 +7,15 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import 'dotenv/config';
 import initNotificationHandler from './services/notificationHandler.js/index.js';
-import { startWorker } from './workers/workerRunner.js';
+import { startBullWorker } from './workers/bullWorker.js';
 
 const app = express();
 
 // Initialize Notifications
 initNotificationHandler();
 
-// Start Background Worker
-startWorker();
+// Start Background Worker (BullMQ)
+startBullWorker();
 
 // Security middleware
 app.use(helmet({
