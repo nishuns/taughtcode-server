@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "develop", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    # - name: Run Tests
+    #   run: npm test
+
+    # - name: Lint Code
+    #   run: npm run lint
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Production
+        run: echo "Deploying to production server..."
+        # Add your deployment steps here (e.g., SSH, Docker push, Firebase deploy)
+        # Example for SSH:
+        # uses: appleboy/ssh-action@master
+        # with:
+        #   host: ${{ secrets.HOST }}
+        #   username: ${{ secrets.USERNAME }}
+        #   key: ${{ secrets.SSH_KEY }}
+        #   script: |
+        #     cd /path/to/app
+        #     git pull
+        #     npm install
+        #     pm2 restart server
