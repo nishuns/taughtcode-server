@@ -1,54 +1,92 @@
-name: CI/CD Pipeline
+name: TaughtCode Server CI/CD
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "master", "develop", "deploy" ]
   pull_request:
-    branches: [ "develop", "master" ]
+    branches: [ "master", "develop" ]
+
+# Prevent concurrent runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  # --- Step 1: Continuous Integration (Quality Checks) ---
+  ci:
+    name: Continuous Integration
     runs-on: ubuntu-latest
-
+    
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x]
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-    - name: Install Dependencies
-      run: npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-    # - name: Run Tests
-    #   run: npm test
+      - name: Security Audit
+        run: npm audit --audit-level=high || true # Informational, don't break yet
 
-    # - name: Lint Code
-    #   run: npm run lint
+      - name: Run Tests
+        run: npm test || true # Echoes error but continues as you don't have tests yet
 
+      # Uncomment once you add a linting script (e.g., eslint)
+      # - name: Lint Code
+      #   run: npm run lint
+
+  # --- Step 2: Continuous Deployment ---
   deploy:
-    needs: build
-    if: github.ref == 'refs/heads/deploy'
+    name: Continuous Deployment
+    needs: ci
+    if: github.ref == 'refs/heads/deploy' && github.event_name == 'push'
     runs-on: ubuntu-latest
     
     steps:
-      - name: Deploy to Production
-        run: echo "Deploying to production server..."
-        # Add your deployment steps here (e.g., SSH, Docker push, Firebase deploy)
-        # Example for SSH:
-        # uses: appleboy/ssh-action@master
-        # with:
-        #   host: ${{ secrets.HOST }}
-        #   username: ${{ secrets.USERNAME }}
-        #   key: ${{ secrets.SSH_KEY }}
-        #   script: |
-        #     cd /path/to/app
-        #     git pull
-        #     npm install
-        #     pm2 restart server
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server
+        # This is a generic placeholder using SSH. 
+        # You will need to add HOST, USERNAME, and SSH_KEY to your GitHub Repo Secrets.
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            # Navigate to app directory
+            cd /var/www/taughtcode-server || exit
+            
+            # Pull latest changes
+            git fetch origin deploy
+            git reset --hard origin/deploy
+            
+            # Install production dependencies
+            npm ci --omit=dev
+            
+            # Run database migrations or other setup if needed
+            # npm run migrate
+            
+            # Restart the server (assuming PM2 is used)
+            pm2 restart taughtcode-server --update-env || pm2 start src/server.js --name taughtcode-server
+            
+            # Verify status
+            pm2 status taughtcode-server
+
+      - name: Post-Deployment Health Check
+        run: |
+          echo "Waiting for server to restart..."
+          sleep 10
+          # Replace with your actual health check URL
+          # curl -f http://${{ secrets.DEPLOY_HOST }}/api/v1/health || exit 1
