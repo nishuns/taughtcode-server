@@ -50,7 +50,7 @@ async function startServer() {
         process.on('SIGINT', async () => {
             logger.log('SIGINT received, shutting down gracefully...');
             server.close(async () => {
-                await database.disconnect();
+                // await database.disconnect();
                 process.exit(0);
             });
         });
