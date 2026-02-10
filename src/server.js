@@ -65,7 +65,7 @@ async function startServer() {
 // Start server if this file is run directly
 // In ES modules, check if this is the main module
 import { pathToFileURL } from 'url';
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href || process.env.PM2_HOME) {
     startServer();
 }
 
