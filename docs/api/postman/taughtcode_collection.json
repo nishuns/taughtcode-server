@@ -333,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\",\n    \"instructions\": \"Focus on scalability challenges\"\n}",
+							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\",\n    \"instructions\": \"Focus on scalability challenges\",\n    \"templateId\": \"OPTIONAL_TEMPLATE_ID\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -535,7 +535,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"topic\": \"Machine Learning\",\n    \"category\": \"tutorial\"\n}",
+							"raw": "{\n    \"description\": \"A comprehensive tutorial on Machine Learning basics\",\n    \"category\": \"tutorial\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
