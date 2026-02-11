@@ -38,6 +38,10 @@ const articleSchema = {
         type: String, // Reference to User uid
         required: true
     },
+    templateId: {
+        type: String, // Reference to ArticleTemplate id
+        default: null
+    },
     references: {
         type: Array, // Array of reference objects or strings
         default: []

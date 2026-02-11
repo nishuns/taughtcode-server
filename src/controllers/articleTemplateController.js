@@ -6,13 +6,13 @@ import * as templateService from '../services/articleTemplateService.js';
 const generateTemplate = async (req, res) => {
     try {
         const { uid } = req.user;
-        const { topic, category } = req.body;
+        const { description, category } = req.body;
 
-        if (!topic) {
-            return res.status(400).json({ success: false, error: 'Topic is required' });
+        if (!description) {
+            return res.status(400).json({ success: false, error: 'Description is required' });
         }
 
-        const template = await templateService.generateTemplate(uid, topic, category);
+        const template = await templateService.generateTemplate(uid, description, category);
 
         res.status(201).json({
             success: true,
