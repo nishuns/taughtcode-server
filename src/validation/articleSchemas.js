@@ -41,5 +41,11 @@ export const addReviewSchema = Joi.object({
 export const generateArticleSchema = Joi.object({
     topic: Joi.string().required().min(3).max(500),
     depth: Joi.string().valid('standard', 'deep-dive').default('standard'),
-    instructions: Joi.string().max(1000).allow('')
+    instructions: Joi.string().max(1000).allow(''),
+    templateId: Joi.string().allow(null)
+});
+
+export const generateTemplateSchema = Joi.object({
+    description: Joi.string().required().min(10).max(1000),
+    category: Joi.string().valid('tutorial', 'case-study', 'blog-post', 'news-update', 'technical-guide').default('blog-post')
 });

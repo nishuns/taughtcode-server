@@ -4,7 +4,7 @@ import * as templateController from '../controllers/articleTemplateController.js
 import { isAuthenticated, optionalAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 import { enqueueJob } from '../middleware/jobMiddleware.js';
-import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema } from '../validation/articleSchemas.js';
+import { createArticleSchema, updateArticleSchema, addReviewSchema, generateArticleSchema, generateTemplateSchema } from '../validation/articleSchemas.js';
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               topic:
+ *               description:
  *                 type: string
  *               category:
  *                 type: string
@@ -42,6 +42,7 @@ const router = express.Router();
  */
 router.post('/templates/generate',
     isAuthenticated,
+    validateRequest(generateTemplateSchema),
     enqueueJob('template-generation')
 );
 
@@ -125,7 +126,10 @@ router.post('/',
  *                 default: standard
  *               instructions:
  *                 type: string
- *                 description: Custom instructions for the AI (e.g., specific tone, structure preferences)
+ *                 description: Custom instructions for the AI
+ *               templateId:
+ *                 type: string
+ *                 description: Optional ID of an Article Template to use
  *     responses:
  *       202:
  *         description: Job accepted

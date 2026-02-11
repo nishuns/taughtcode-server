@@ -39,7 +39,7 @@ Ensure the image prompts are descriptive and suitable for an AI image generator.
 `;
 };
 
-export const generateContentPrompt = (structure, imageUrls, depth = 'standard') => {
+export const generateContentPrompt = (structure, imageUrls, depth = 'standard', templateInstructions = '') => {
   const isDeepDive = depth === 'deep-dive';
   const contentInstruction = isDeepDive
     ? `
@@ -59,6 +59,8 @@ You are an expert web content creator. Write a full, detailed article in clean, 
 
 Title: ${structure.title}
 Description: ${structure.description}
+
+**Template Instructions**: ${templateInstructions || 'None'}
 
 Structure:
 ${JSON.stringify(structure.sections, null, 2)}
@@ -87,22 +89,23 @@ ${contentInstruction}
 `;
 };
 
-export const generateTemplatePrompt = (topic, category) => `
-You are an expert content strategist. Create a reusable **Article Template** for the category "${category}" focusing on "${topic}".
+export const generateTemplatePrompt = (description) => `
+You are an expert content strategist. Create a reusable **Article Template** based on the following description: "${description}".
 
-The goal is to create a structure that can be used to generate multiple specific articles in this domain.
+The goal is to create a structure that can be used to generate multiple specific articles matching this description.
 
 Please provide the output in strict JSON format matching this structure:
 {
-  "name": "Template Name (e.g., 'Ultimate Guide to ${topic}')",
-  "description": "Description of what this template is for",
-  "category": "${category}",
+  "name": "Template Name (e.g., 'Ultimate Guide Template')",
+  "description": "Short description of this template",
+  "category": "blog-post", // or tutorial, case-study, etc.
   "aiInstructions": "General instructions for the AI when using this template (e.g., 'Tone should be professional', 'Focus on practical examples')",
   "structure": [
     {
       "heading": "Section Heading (Generic)",
       "contentBrief": "Instructions on what this section should cover (e.g., 'Explain the core concept of...')",
-      "imagePrompt": "Description of a generic image for this section (optional)"
+      "imagePrompt": "Description of a generic image for this section (optional)",
+      "layout": "standard"
     }
     // ... 4-6 sections recommended
   ]

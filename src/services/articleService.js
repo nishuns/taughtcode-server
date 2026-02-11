@@ -1,7 +1,8 @@
-import { Article, User, Review, Tag } from '../models/index.js';
+import { Article, User, Review, Tag, ArticleTemplate } from '../models/index.js';
 import logger from '../utils/logger.js';
 import * as aiService from './aiService.js';
 import * as storageService from './storageService.js';
+import * as templateService from './articleTemplateService.js';
 import { generateStructurePrompt, generateContentPrompt } from '../prompts/articlePrompts.js';
 import { minifyHTML } from '../utils/htmlMinifier.js';
 import fs from 'fs/promises';
@@ -54,59 +55,77 @@ async function publishArticle(id, authorId) {
  * @param {string} topic
  * @param {string} depth - 'standard' or 'deep-dive'
  * @param {string} instructions - Optional custom instructions
+ * @param {string} templateId - Optional template ID
  */
-async function generateArticleContent(authorId, topic, depth = 'standard', instructions = '') {
-    logger.info(`ArticleService: Generating article for topic "${topic}" (Depth: ${depth})`);
-
-    // 1. Generate Structure
-    const structureResult = await aiService.generateText(generateStructurePrompt(topic, depth, instructions), {
-        responseMimeType: 'application/json'
-    });
+async function generateArticleContent(authorId, topic, depth = 'standard', instructions = '', templateId = null) {
+    logger.info(`ArticleService: Generating article for topic "${topic}" (Depth: ${depth}, Template: ${templateId})`);
 
     let structure;
-    try {
-        structure = JSON.parse(structureResult.text);
-    } catch (e) {
-        // Fallback if AI didn't return strict JSON (try to find JSON block)
-        const match = structureResult.text.match(/\{[\s\S]*\}/);
-        if (match) {
-            structure = JSON.parse(match[0]);
-        } else {
-            throw new Error("Failed to generate valid article structure");
+    let templateInstructions = '';
+
+    if (templateId) {
+        // Use existing template
+        const template = await templateService.getTemplate(templateId);
+        structure = {
+            title: topic, // Use provided topic as title
+            description: `Article based on ${template.name}`,
+            tags: [],
+            sections: template.structure
+        };
+        templateInstructions = template.aiInstructions || '';
+        
+        // Increment usage
+        await templateService.incrementUsage(templateId);
+    } else {
+        // 1. Generate Structure from scratch
+        const structureResult = await aiService.generateText(generateStructurePrompt(topic, depth, instructions), {
+            responseMimeType: 'application/json'
+        });
+        
+        try {
+            structure = JSON.parse(structureResult.text);
+        } catch (e) {
+            const match = structureResult.text.match(/\{[\s\S]*\}/);
+            if (match) {
+                structure = JSON.parse(match[0]);
+            } else {
+                throw new Error("Failed to generate valid article structure");
+            }
         }
     }
 
-    // 2. Generate and Upload Images
+    // 2. Generate and Upload Images (Same as before)
     const imageUrls = {};
     for (const section of structure.sections) {
         if (section.imagePrompt) {
             try {
-                const imageResult = await aiService.generateImage(section.imagePrompt);
+                // If using template, imagePrompt might be generic. AI should still handle it.
+                // Optionally, we could enhance the prompt by combining topic + template prompt.
+                const enhancedPrompt = templateId ? `${section.imagePrompt} related to ${topic}` : section.imagePrompt;
+                
+                const imageResult = await aiService.generateImage(enhancedPrompt);
                 if (imageResult.success && imageResult.images.length > 0) {
                     const imgPart = imageResult.images[0];
                     let buffer, mimeType;
 
                     if (typeof imgPart === 'string') {
-                        // Handle URL (like placeholders or other providers)
                         const response = await fetch(imgPart);
                         const arrayBuffer = await response.arrayBuffer();
                         buffer = Buffer.from(arrayBuffer);
                         mimeType = response.headers.get('content-type') || 'image/png';
                     } else if (imgPart.inlineData) {
-                        // Handle native Gemini inlineData (base64)
                         buffer = Buffer.from(imgPart.inlineData.data, 'base64');
                         mimeType = imgPart.inlineData.mimeType;
                     }
 
                     if (buffer) {
-                        // Upload to Storage
                         const uploadResult = await storageService.uploadUserAsset(
                             authorId,
                             buffer,
                             mimeType,
                             'generated_images'
                         );
-
+                        
                         imageUrls[section.heading] = uploadResult.url;
                     }
                 }
@@ -117,8 +136,11 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
     }
 
     // 3. Generate Full Content
+    // Combine custom instructions with template instructions
+    const finalInstructions = `${templateInstructions}\n${instructions}`.trim();
+    
     const contentResult = await aiService.generateText(
-        generateContentPrompt(structure, imageUrls, depth),
+        generateContentPrompt(structure, imageUrls, depth, finalInstructions),
         { model: 'pro' }
     );
     const content = contentResult.text;
@@ -129,8 +151,9 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
         description: structure.description,
         content: content,
         tags: structure.tags || [],
-        status: 'draft', // Safety first
-        access: 'free'
+        status: 'draft',
+        access: 'free',
+        templateId // Link to template
     };
 
     return await createArticle(authorId, articleData);
@@ -142,6 +165,7 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
  * @param {Object} articleData 
  */
 async function createArticle(authorId, articleData) {
+
     // 1. Generate Slug
     let slug = articleData.title
         .toLowerCase()
