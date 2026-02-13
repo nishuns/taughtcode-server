@@ -51,8 +51,19 @@ async function getDocContent(routePath) {
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1] : path.basename(filePath, '.md');
 
-    // Render markdown to HTML
-    const html = marked.parse(markdown);
+    // Configure marked with custom renderer for mermaid diagrams
+    const renderer = new marked.Renderer();
+    const originalCodeRenderer = renderer.code.bind(renderer);
+    
+    renderer.code = (token) => {
+        if (token.lang === 'mermaid') {
+            return `<pre class="mermaid">${token.text}</pre>`;
+        }
+        return originalCodeRenderer(token);
+    };
+
+    // Parse markdown with the custom renderer
+    const html = marked.parse(markdown, { renderer });
 
     return {
         title,
