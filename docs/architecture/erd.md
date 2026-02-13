@@ -121,6 +121,8 @@ We use a **Provider Pattern** to abstract external dependencies (AI, Storage, Au
 
 ```mermaid
 classDiagram
+    note for ProviderRegistry "Central point for dependency injection"
+
     class ProviderRegistry {
         +register(name, instance)
         +get(name)
@@ -165,8 +167,6 @@ classDiagram
     AIProvider <|-- GeminiProvider
     AIProvider <|-- OpenAIProvider
     StorageProvider <|-- FirebaseStorageProvider
-
-    note for ProviderRegistry "Central point for dependency injection"
 ```
 
 ## 4. Job Processing & Service Workers
