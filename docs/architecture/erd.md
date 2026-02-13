@@ -7,77 +7,28 @@ This document outlines the data model and architectural flows for the TaughtCode
 In this system, the **Job** entity is central to tracking the asynchronous lifecycle of AI content generation. The `Job` table acts as the source of truth for the process, decoupling the generation logic from the final `Article` schema.
 
 ```mermaid
-erDiagram
-    ORGANIZATION {
-        string id PK
-        string name
-        string ownerId FK "Admin User"
-        string status
-        timestamp created_at
-    }
+flowchart TD
+    %% Entities represented as nodes
+    Organization[ORGANIZATION<br/>id: PK<br/>name<br/>ownerId: FK<br/>status]
+    User[USER<br/>uid: PK<br/>email: UK<br/>role: Enum<br/>authProvider]
+    ApiKey[API_KEY<br/>id: PK<br/>key_hash<br/>scopes<br/>expires_at]
+    Template[ARTICLE_TEMPLATE<br/>id: PK<br/>structure: JSON<br/>aiInstructions]
+    Article[ARTICLE<br/>id: PK<br/>status: Enum<br/>content: HTML]
+    Job[JOB<br/>id: PK<br/>status: Enum<br/>bullmq_job_id: UK<br/>data: JSONB<br/>result: JSONB]
 
-    USER {
-        string uid PK "Firebase UID"
-        string email "Unique"
-        string displayName
-        string organizationId FK
-        string role "user/admin"
-        string authProvider "firebase/oauth"
-    }
-
-    API_KEY {
-        string id PK
-        string key_hash
-        string name
-        string userId FK
-        string scopes "read/write/admin"
-        timestamp last_used_at
-        timestamp expires_at
-    }
-
-    ARTICLE_TEMPLATE {
-        string id PK
-        string name
-        string structure "JSON"
-        string aiInstructions
-        string authorId FK
-    }
-
-    ARTICLE {
-        string id PK
-        string title
-        text content "HTML/Markdown"
-        enum status "draft/published/archived"
-        string authorId FK
-        string templateId FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    JOB {
-        string id PK
-        string type "article_generation"
-        enum status "queued/processing/completed/failed"
-        string bullmq_job_id "Redis ID"
-        jsonb data "Input Payload"
-        jsonb result "LLM Response"
-        text error_log
-        string userId FK
-        string articleId FK "Target Article"
-        int attempt_count
-        timestamp created_at
-        timestamp started_at
-        timestamp finished_at
-    }
-
-    ORGANIZATION ||--o{ USER : "employs"
-    USER ||--o{ ARTICLE : "authors"
-    USER ||--o{ JOB : "initiates"
-    USER ||--o{ ARTICLE_TEMPLATE : "creates"
-    USER ||--o{ API_KEY : "owns"
+    %% Relationships
+    Organization -->|employs| User
+    User -->|authors| Article
+    User -->|initiates| Job
+    User -->|creates| Template
+    User -->|owns| ApiKey
     
-    ARTICLE_TEMPLATE ||--o{ ARTICLE : "structures"
-    ARTICLE ||--o{ JOB : "generated_by"
+    Template -->|structures| Article
+    Article -.->|generated_by| Job
+    
+    %% Styling
+    classDef entity fill:#f9f,stroke:#333,stroke-width:2px;
+    class Organization,User,ApiKey,Template,Article,Job entity;
 ```
 
 ## 2. Authentication Architecture
@@ -120,51 +71,33 @@ flowchart TD
 We use a **Provider Pattern** to abstract external dependencies (AI, Storage, Auth), allowing for easy switching of vendors without changing business logic.
 
 ```mermaid
-classDiagram
-    class ProviderRegistry {
-        +register(name, instance)
-        +get(name)
-        +setDefault(name)
-    }
+flowchart TD
+    Registry[ProviderRegistry<br/>+register<br/>+get]
+    
+    Base[BaseProvider<br/>+initialize<br/>+validateConfig]
+    
+    AI[AIProvider<br/>+generateText<br/>+generateImage]
+    Storage[StorageProvider<br/>+uploadFile]
+    
+    Gemini[GeminiProvider]
+    OpenAI[OpenAIProvider]
+    Firebase[FirebaseStorageProvider]
 
-    class BaseProvider {
-        <<interface>>
-        +initialize(config)
-        +validateConfig()
-    }
-
-    class AIProvider {
-        <<interface>>
-        +generateText(prompt)
-        +generateImage(prompt)
-    }
-
-    class GeminiProvider {
-        +generateText(prompt)
-        +generateImage(prompt)
-    }
-
-    class OpenAIProvider {
-        +generateText(prompt)
-        +generateImage(prompt)
-    }
-
-    class StorageProvider {
-        <<interface>>
-        +uploadFile(file)
-        +getSignedUrl(path)
-    }
-
-    class FirebaseStorageProvider {
-        +uploadFile(file)
-    }
-
-    ProviderRegistry o-- BaseProvider
-    BaseProvider <|-- AIProvider
-    BaseProvider <|-- StorageProvider
-    AIProvider <|.. GeminiProvider
-    AIProvider <|.. OpenAIProvider
-    StorageProvider <|.. FirebaseStorageProvider
+    Registry -->|manages| Base
+    
+    Base -->|implements| AI
+    Base -->|implements| Storage
+    
+    AI -->|extended by| Gemini
+    AI -->|extended by| OpenAI
+    
+    Storage -->|extended by| Firebase
+    
+    classDef interface fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef concrete fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    
+    class Registry,Base,AI,Storage interface;
+    class Gemini,OpenAI,Firebase concrete;
 ```
 
 ## 4. Job Processing & Service Workers
