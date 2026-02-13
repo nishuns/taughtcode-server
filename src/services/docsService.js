@@ -51,8 +51,23 @@ async function getDocContent(routePath) {
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1] : path.basename(filePath, '.md');
 
-    // Render markdown to HTML
-    const html = marked.parse(markdown);
+    // Configure marked with custom renderer for mermaid diagrams
+    const renderer = new marked.Renderer();
+    const originalCodeRenderer = renderer.code.bind(renderer);
+    
+    renderer.code = (code, language, isEscaped) => {
+        if (language === 'mermaid') {
+            return `<div class="mermaid">${code}</div>`;
+        }
+        // Use default renderer for other languages
+        // Note: marked v4+ renderer.code signature is (code, language, isEscaped)
+        // We can just fall back to standard output if we don't want to bind original
+        // But simply returning the standard HTML is safer:
+        return `<pre><code class="language-${language}">${isEscaped ? code : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</code></pre>`;
+    };
+
+    // Parse markdown with the custom renderer
+    const html = marked.parse(markdown, { renderer });
 
     return {
         title,
