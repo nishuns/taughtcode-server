@@ -57,7 +57,7 @@ async function getDocContent(routePath) {
     
     renderer.code = (token) => {
         if (token.lang === 'mermaid') {
-            return `<div class="mermaid">${token.text}</div>`;
+            return `<pre class="mermaid">${token.text}</pre>`;
         }
         return originalCodeRenderer(token);
     };
