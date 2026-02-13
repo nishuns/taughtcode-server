@@ -8,7 +8,6 @@ In this system, the **Job** entity is central to tracking the asynchronous lifec
 
 ```mermaid
 erDiagram
-    %% Core Entities
     ORGANIZATION {
         string id PK
         string name
@@ -71,7 +70,6 @@ erDiagram
         timestamp finished_at
     }
 
-    %% Relationships
     ORGANIZATION ||--o{ USER : "employs"
     USER ||--o{ ARTICLE : "authors"
     USER ||--o{ JOB : "initiates"
@@ -87,7 +85,7 @@ erDiagram
 The system supports dual authentication strategies: **User Interactive (OAuth/Firebase)** and **Machine-to-Machine (API Keys)**.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph Clients
         Web[Web Client]
         CLI[CLI Tool / External Service]
@@ -104,7 +102,7 @@ graph TD
         KeyDB[(API Keys Collection)]
     end
 
-    Web -->|Bearer Token (JWT)| AuthMiddleware
+    Web -->|Bearer Token JWT| AuthMiddleware
     CLI -->|x-api-key Header| AuthMiddleware
 
     AuthMiddleware -->|Verify JWT| FirebaseAuth
