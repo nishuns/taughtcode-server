@@ -18,7 +18,7 @@ erDiagram
 
     USER {
         string uid PK "Firebase UID"
-        string email UK
+        string email "Unique"
         string displayName
         string organizationId FK
         string role "user/admin"
@@ -58,7 +58,7 @@ erDiagram
         string id PK
         string type "article_generation"
         enum status "queued/processing/completed/failed"
-        string bullmq_job_id UK "Redis ID"
+        string bullmq_job_id "Redis ID"
         jsonb data "Input Payload"
         jsonb result "LLM Response"
         text error_log
@@ -106,10 +106,10 @@ flowchart TD
     CLI -->|x-api-key Header| AuthMiddleware
 
     AuthMiddleware -->|Verify JWT| FirebaseAuth
-    AuthMiddleware -->|Hash & Compare| APIKeyAuth
+    AuthMiddleware -->|Hash and Compare| APIKeyAuth
 
     FirebaseAuth -->|Get User Profile| UserDB
-    APIKeyAuth -->|Validate Key & Scopes| KeyDB
+    APIKeyAuth -->|Validate Key and Scopes| KeyDB
     APIKeyAuth -->|Get Linked User| UserDB
 
     UserDB -->|Attach User Context| RequestContext[Request Context]
@@ -121,15 +121,6 @@ We use a **Provider Pattern** to abstract external dependencies (AI, Storage, Au
 
 ```mermaid
 classDiagram
-    ProviderRegistry o-- BaseProvider
-    BaseProvider <|-- AIProvider
-    BaseProvider <|-- StorageProvider
-    AIProvider <|-- GeminiProvider
-    AIProvider <|-- OpenAIProvider
-    StorageProvider <|-- FirebaseStorageProvider
-
-    note for ProviderRegistry "Central point for dependency injection"
-
     class ProviderRegistry {
         +register(name, instance)
         +get(name)
@@ -167,6 +158,13 @@ classDiagram
     class FirebaseStorageProvider {
         +uploadFile(file)
     }
+
+    ProviderRegistry o-- BaseProvider
+    BaseProvider <|-- AIProvider
+    BaseProvider <|-- StorageProvider
+    AIProvider <|.. GeminiProvider
+    AIProvider <|.. OpenAIProvider
+    StorageProvider <|.. FirebaseStorageProvider
 ```
 
 ## 4. Job Processing & Service Workers
