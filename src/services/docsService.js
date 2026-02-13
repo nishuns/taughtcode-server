@@ -55,15 +55,11 @@ async function getDocContent(routePath) {
     const renderer = new marked.Renderer();
     const originalCodeRenderer = renderer.code.bind(renderer);
     
-    renderer.code = (code, language, isEscaped) => {
-        if (language === 'mermaid') {
-            return `<div class="mermaid">${code}</div>`;
+    renderer.code = (token) => {
+        if (token.lang === 'mermaid') {
+            return `<div class="mermaid">${token.text}</div>`;
         }
-        // Use default renderer for other languages
-        // Note: marked v4+ renderer.code signature is (code, language, isEscaped)
-        // We can just fall back to standard output if we don't want to bind original
-        // But simply returning the standard HTML is safer:
-        return `<pre><code class="language-${language}">${isEscaped ? code : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</code></pre>`;
+        return originalCodeRenderer(token);
     };
 
     // Parse markdown with the custom renderer
