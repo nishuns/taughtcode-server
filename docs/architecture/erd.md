@@ -25,10 +25,6 @@ flowchart TD
     
     Template -->|structures| Article
     Article -.->|generated_by| Job
-    
-    %% Styling
-    classDef entity fill:#f9f,stroke:#333,stroke-width:2px;
-    class Organization,User,ApiKey,Template,Article,Job entity;
 ```
 
 ## 2. Authentication Architecture
@@ -92,12 +88,6 @@ flowchart TD
     AI -->|extended by| OpenAI
     
     Storage -->|extended by| Firebase
-    
-    classDef interface fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef concrete fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    
-    class Registry,Base,AI,Storage interface;
-    class Gemini,OpenAI,Firebase concrete;
 ```
 
 ## 4. Job Processing & Service Workers
