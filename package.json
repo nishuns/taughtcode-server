@@ -1,0 +1,55 @@
+{
+  "name": "taughtcode-server",
+  "version": "1.0.0",
+  "description": "AI orchestrated server based on PSU pattern for all the task that needs to be done in here",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.desktop.com:nishuns/taughtcode-server.git"
+  },
+  "keywords": [
+    "node.js",
+    "express",
+    "event-based",
+    "queue",
+    "worker-threads",
+    "AI"
+  ],
+  "author": "Nischay Sharma",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^1.38.0",
+    "axios": "^1.13.3",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.67.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "firebase-admin": "^13.6.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.9.2",
+    "joi": "^18.0.2",
+    "jsdom": "^27.4.0",
+    "jsonwebtoken": "^9.0.3",
+    "marked": "^17.0.1",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0",
+    "winston": "^3.19.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
