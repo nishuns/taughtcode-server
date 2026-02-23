@@ -63,13 +63,27 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
     let structure;
     let templateInstructions = '';
 
+    // 0. Auto-generate at least 20 tags
+    let generatedTags = [];
+    try {
+        const tagsResult = await aiService.generateText(`Generate exactly 20 highly relevant SEO and topic tags for an article about "${topic}". Return ONLY a JSON array of strings.`, {
+            responseMimeType: 'application/json'
+        });
+        generatedTags = JSON.parse(tagsResult.text);
+        if (!Array.isArray(generatedTags)) {
+             generatedTags = [];
+        }
+    } catch (e) {
+        logger.warn(`Failed to generate 20 tags for topic "${topic}":`, e);
+    }
+
     if (templateId) {
         // Use existing template
         const template = await templateService.getTemplate(templateId);
         structure = {
             title: topic, // Use provided topic as title
             description: `Article based on ${template.name}`,
-            tags: [],
+            tags: generatedTags,
             sections: template.structure
         };
         templateInstructions = template.aiInstructions || '';
@@ -84,10 +98,13 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
         
         try {
             structure = JSON.parse(structureResult.text);
+            // Ensure at least 20 tags are present
+            structure.tags = [...new Set([...(structure.tags || []), ...generatedTags])];
         } catch (e) {
             const match = structureResult.text.match(/\{[\s\S]*\}/);
             if (match) {
                 structure = JSON.parse(match[0]);
+                structure.tags = [...new Set([...(structure.tags || []), ...generatedTags])];
             } else {
                 throw new Error("Failed to generate valid article structure");
             }
