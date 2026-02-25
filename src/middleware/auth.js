@@ -1,5 +1,6 @@
 import { getUserByToken, verifyAuth } from '../services/authService.js'
 import apiKeyAuth from './apiKeyAuth.js';
+import { validateClientAccess } from '../services/organizationService.js';
 
 /**
  * Enhanced authentication middleware supporting both Bearer tokens and API Keys
@@ -10,13 +11,35 @@ async function isAuthenticated(req, res, next) {
         return next();
     }
 
-    // 2. Otherwise, attempt API Key auth directly (if not mounted separately)
+    // 2. Check Client Origin Whitelist
+    const origin = req.headers.origin || req.headers.referer;
+    if (origin) {
+        try {
+            // Strip out any trailing path from referer just in case
+            const originUrl = origin.startsWith('http') ? new URL(origin).origin : origin;
+            const orgId = await validateClientAccess(originUrl, req.path);
+            
+            if (orgId) {
+                req.organizationId = orgId;
+                req.authType = 'client_whitelist';
+                req.user = {
+                    id: `system_client_${orgId}`,
+                    isSystem: true
+                };
+                return next();
+            }
+        } catch (e) {
+            // Invalid origin URL, just proceed to next auth method
+        }
+    }
+
+    // 3. Otherwise, attempt API Key auth directly (if not mounted separately)
     await apiKeyAuth(req, res, () => { });
     if (req.authType === 'apikey') {
         return next();
     }
 
-    // 3. Fallback to Firebase Token Authentication
+    // 4. Fallback to Firebase Token Authentication
     try {
         const token = extractToken(req)
 
