@@ -31,6 +31,10 @@ const organizationSchema = {
         type: String,
         required: true // The Admin of the organization
     },
+    members: {
+        type: Array, // Array of { userId, role, addedAt }
+        default: []
+    },
     settings: {
         type: Object,
         default: {
