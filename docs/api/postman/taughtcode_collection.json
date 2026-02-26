@@ -282,6 +282,46 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Update Integration",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accessToken\": \"ghp_your_personal_access_token\",\n    \"owner\": \"your-github-username\",\n    \"repo\": \"your-repo-name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/integrations/:provider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"integrations",
+								":provider"
+							],
+							"variable": [
+								{
+									"key": "provider",
+									"value": "github"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

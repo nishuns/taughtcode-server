@@ -235,4 +235,38 @@ router.patch('/:id/disable', userController.disableUser);
  */
 router.patch('/:id/activate', userController.activateUser);
 
+/**
+ * @swagger
+ * /users/integrations/{provider}:
+ *   put:
+ *     summary: Update third-party integration (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [github]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accessToken:
+ *                 type: string
+ *               owner:
+ *                 type: string
+ *               repo:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Integration updated
+ */
+router.put('/integrations/:provider', userController.updateIntegration);
+
 export default router;

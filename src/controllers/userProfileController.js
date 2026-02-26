@@ -186,6 +186,32 @@ const activateUser = async (req, res) => {
     }
 };
 
+/**
+ * Update dynamic integration (e.g. GitHub)
+ */
+const updateIntegration = async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const config = req.body;
+        const userId = req.user.id; // Doc ID from session if available, otherwise we need to find it
+
+        if (!userId && req.user.uid) {
+            const profile = await userService.getUser(req.user.uid);
+            if (profile) {
+                const updated = await userService.updateIntegration(profile.id, provider, config);
+                return res.json({ success: true, data: updated });
+            }
+        } else if (userId) {
+            const updated = await userService.updateIntegration(userId, provider, config);
+            return res.json({ success: true, data: updated });
+        }
+
+        throw new Error('User context not found');
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
 export {
     onboardUser,
     getMe,
@@ -194,5 +220,6 @@ export {
     getAllUsers,
     deactivateUser,
     disableUser,
-    activateUser
+    activateUser,
+    updateIntegration
 };
