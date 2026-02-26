@@ -68,6 +68,31 @@ export async function createOrganization(orgData, ownerId) {
 }
 
 /**
+ * Updates an organization's details.
+ */
+export async function updateOrganization(orgId, requesterId, updates) {
+    const org = await getOrganizationById(orgId);
+    const members = org.members || [];
+
+    const requesterRole = members.find(m => m.userId === requesterId)?.role;
+    if (requesterRole !== ROLES.ADMIN) {
+        throw new Error('Only organization admins can update organization details');
+    }
+
+    // Prevent updating sensitive internal fields
+    delete updates.id;
+    delete updates.ownerId;
+    delete updates.members;
+    delete updates.clients;
+    delete updates.status;
+    delete updates.createdAt;
+
+    const updated = await Organization.findByIdAndUpdate(orgId, updates, { new: true });
+    logger.info(`Organization ${orgId} updated by ${requesterId}`);
+    return updated;
+}
+
+/**
  * Gets all organizations.
  */
 export async function getAllOrganizations() {
@@ -143,7 +168,7 @@ export async function updateMemberRole(orgId, requesterId, targetUserId, newRole
     const currentTargetRole = members[targetMemberIndex].role;
 
     if (!canChangeRole(requesterRole, currentTargetRole, newRole)) {
-        throw new Error('Insufficient permissions to change this user's role');
+        throw new Error('Insufficient permissions to change this user\'s role');
     }
 
     if (targetUserId === org.ownerId && newRole !== ROLES.ADMIN) {

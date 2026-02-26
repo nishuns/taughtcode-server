@@ -18,6 +18,21 @@ export async function createOrganization(req, res) {
     }
 }
 
+export async function updateOrganization(req, res) {
+    try {
+        const { orgId } = req.params;
+        const requesterId = req.user.id;
+        const updates = req.body;
+
+        const org = await organizationService.updateOrganization(orgId, requesterId, updates);
+        res.status(200).json({ success: true, data: org });
+    } catch (error) {
+        logger.error('Error updating organization:', error);
+        const status = error.message.includes('Only organization admins') ? 403 : 400;
+        res.status(status).json({ success: false, error: error.message || 'Server error' });
+    }
+}
+
 export async function listOrganizations(req, res) {
     try {
         const orgs = await organizationService.getAllOrganizations();

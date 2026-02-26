@@ -23,6 +23,9 @@ router.post('/', organizationController.createOrganization);
 // Get an organization by ID
 router.get('/:orgId', organizationController.getOrganization);
 
+// Update organization details
+router.patch('/:orgId', organizationController.updateOrganization);
+
 // Add a member to an organization
 router.post('/:orgId/members', organizationController.addMember);
 
