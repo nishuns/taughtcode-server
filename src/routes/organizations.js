@@ -14,6 +14,9 @@ const router = express.Router();
 // All organization routes require authentication
 router.use(isAuthenticated);
 
+// List all organizations
+router.get('/', organizationController.listOrganizations);
+
 // Create a new organization
 router.post('/', organizationController.createOrganization);
 

@@ -18,6 +18,16 @@ export async function createOrganization(req, res) {
     }
 }
 
+export async function listOrganizations(req, res) {
+    try {
+        const orgs = await organizationService.getAllOrganizations();
+        res.status(200).json({ success: true, data: orgs });
+    } catch (error) {
+        logger.error('Error listing organizations:', error);
+        res.status(500).json({ success: false, error: error.message || 'Server error' });
+    }
+}
+
 export async function getOrganization(req, res) {
     try {
         const { orgId } = req.params;

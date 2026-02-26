@@ -68,6 +68,13 @@ export async function createOrganization(orgData, ownerId) {
 }
 
 /**
+ * Gets all organizations.
+ */
+export async function getAllOrganizations() {
+    return await Organization.find({});
+}
+
+/**
  * Gets an organization by ID.
  */
 export async function getOrganizationById(orgId) {
