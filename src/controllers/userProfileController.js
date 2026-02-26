@@ -1,5 +1,4 @@
 import * as userService from '../services/userProfileService.js';
-import * as integrationService from '../services/integrationService.js';
 import * as storageService from '../services/storageService.js';
 import Organization from '../models/organizationModel.js';
 
@@ -187,75 +186,6 @@ const activateUser = async (req, res) => {
     }
 };
 
-/**
- * Update dynamic integration (e.g. GitHub)
- */
-const updateIntegration = async (req, res) => {
-    try {
-        const { provider } = req.params;
-        const config = req.body;
-        
-        // Find user profile to get Doc ID if not in req.user.id
-        let userId = req.user.id;
-        if (!userId) {
-            const profile = await userService.getUser(req.user.uid);
-            userId = profile?.id;
-        }
-
-        if (!userId) throw new Error('User profile not found');
-
-        const updated = await integrationService.updateIntegration(userId, provider, config);
-        res.json({ success: true, data: updated });
-    } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
-    }
-};
-
-/**
- * Sync data from an integration
- */
-const syncIntegration = async (req, res) => {
-    try {
-        const { provider } = req.params;
-        const syncOptions = req.body;
-
-        let userId = req.user.id;
-        if (!userId) {
-            const profile = await userService.getUser(req.user.uid);
-            userId = profile?.id;
-        }
-
-        if (!userId) throw new Error('User profile not found');
-
-        const data = await integrationService.syncIntegration(userId, provider, syncOptions);
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
-    }
-};
-
-/**
- * Remove an integration
- */
-const removeIntegration = async (req, res) => {
-    try {
-        const { provider } = req.params;
-
-        let userId = req.user.id;
-        if (!userId) {
-            const profile = await userService.getUser(req.user.uid);
-            userId = profile?.id;
-        }
-
-        if (!userId) throw new Error('User profile not found');
-
-        const updated = await integrationService.removeIntegration(userId, provider);
-        res.json({ success: true, data: updated });
-    } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
-    }
-};
-
 export {
     onboardUser,
     getMe,
@@ -264,8 +194,5 @@ export {
     getAllUsers,
     deactivateUser,
     disableUser,
-    activateUser,
-    updateIntegration,
-    syncIntegration,
-    removeIntegration
+    activateUser
 };

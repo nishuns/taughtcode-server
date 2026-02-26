@@ -3,6 +3,7 @@ import userProfileRoutes from './userProfile.js';
 import articleRoutes from './articles.js';
 import jobRoutes from './jobs.js';
 import organizationRoutes from './organizations.js';
+import integrationRoutes from './integrations.js';
 
 const router = express.Router();
 
@@ -23,6 +24,9 @@ router.use('/jobs', jobRoutes);
 
 // Organization Routes
 router.use('/organizations', organizationRoutes);
+
+// Integration Routes
+router.use('/integrations', integrationRoutes);
 
 /**
  * @swagger
