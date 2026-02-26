@@ -1,9 +1,10 @@
 import * as organizationService from '../services/organizationService.js';
+import * as userService from '../services/userProfileService.js';
 import logger from '../utils/logger.js';
 
 export async function createOrganization(req, res) {
     try {
-        const ownerId = req.user.id;
+        const ownerId = req.user.uid; // Note: use uid from firebase auth
         const orgData = req.body;
         
         if (!orgData.name) {
@@ -11,6 +12,10 @@ export async function createOrganization(req, res) {
         }
 
         const org = await organizationService.createOrganization(orgData, ownerId);
+        
+        // Update user profile with the new organizationId
+        await userService.updateUser(ownerId, { organizationId: org.id });
+        
         res.status(201).json({ success: true, data: org });
     } catch (error) {
         logger.error('Error creating organization:', error);
@@ -36,7 +41,15 @@ export async function updateOrganization(req, res) {
 export async function listOrganizations(req, res) {
     try {
         const orgs = await organizationService.getAllOrganizations();
-        res.status(200).json({ success: true, data: orgs });
+        const userId = req.user.uid;
+
+        const processedOrgs = orgs.map(org => ({
+            ...org,
+            isOwner: org.ownerId === userId,
+            isMember: org.members?.some(m => m.userId === userId) || org.ownerId === userId
+        }));
+
+        res.status(200).json({ success: true, data: processedOrgs });
     } catch (error) {
         logger.error('Error listing organizations:', error);
         res.status(500).json({ success: false, error: error.message || 'Server error' });
