@@ -276,3 +276,41 @@ export async function removeClient(orgId, requesterId, clientUrl) {
     logger.info(`Client ${clientUrl} removed from organization ${orgId}`);
     return updated;
 }
+
+/**
+ * Validates if a given client URL has access to a specific API path.
+ * Returns the organization ID if valid, null otherwise.
+ */
+export async function validateClientAccess(clientUrl, apiPath) {
+    if (!clientUrl) return null;
+
+    // Remove trailing slash from clientUrl for consistent matching
+    const normalizedUrl = clientUrl.replace(/\/$/, '');
+    
+    // In a real production scenario with Firebase, it's better to maintain 
+    // a separate collection or array of strings for querying. 
+    // For simplicity, we fetch all organizations with clients.
+    // (If the app grows, this should be optimized).
+    const organizations = await Organization.find();
+    
+    for (const org of organizations) {
+        if (!org.clients) continue;
+        
+        const client = org.clients.find(c => c.url === normalizedUrl || c.url === clientUrl);
+        if (client) {
+            // Check if the apiPath matches any of the whitelistedApis
+            // e.g. whitelistedApis: ['/api/v1/articles', '/api/v1/public']
+            // We can do exact match or startsWith
+            const hasAccess = client.whitelistedApis.some(whitelistPath => {
+                if (whitelistPath === '*') return true;
+                return apiPath.startsWith(whitelistPath);
+            });
+            
+            if (hasAccess) {
+                return org.id;
+            }
+        }
+    }
+    
+    return null;
+}
