@@ -1,6 +1,5 @@
 import { User } from '../models/index.js';
 import logger from '../utils/logger.js';
-import { IntegrationProvider } from '../providers/integrations/registry.js';
 
 /**
  * Create a new user profile
@@ -193,43 +192,6 @@ async function listUsers(query = {}, options = {}) {
     );
 }
 
-/**
- * Update user integration settings (e.g., GitHub)
- * @param {string} userId - User Doc ID
- * @param {string} providerName - 'github', etc.
- * @param {Object} config - Connection config
- */
-async function updateIntegration(userId, providerName, config) {
-    const profile = await User.findById(userId);
-    if (!profile) throw new Error('User not found');
-
-    // Only admins can have integrations in this system (as per requirements)
-    if (profile.role !== 'admin') {
-        throw new Error('Only admins can configure integrations');
-    }
-
-    // Initialize and validate the integration
-    const provider = IntegrationProvider(providerName, config);
-    const validation = await provider.connect();
-
-    if (!validation.success) {
-        throw new Error(`Failed to connect to ${providerName}`);
-    }
-
-    // Update the profile with new integration settings
-    const integrations = profile.integrations || {};
-    integrations[providerName] = {
-        ...config,
-        accountName: validation.user,
-        updatedAt: new Date()
-    };
-
-    const updatedProfile = await User.findByIdAndUpdate(userId, { integrations }, { new: true });
-    logger.info(`User ${userId} updated integration: ${providerName}`);
-    
-    return updatedProfile;
-}
-
 export {
     createUser,
     getUser,
@@ -240,6 +202,5 @@ export {
     deleteUserById,
     updateLastActive,
     isDisplayNameTaken,
-    listUsers,
-    updateIntegration
+    listUsers
 };

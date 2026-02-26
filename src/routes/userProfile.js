@@ -269,4 +269,44 @@ router.patch('/:id/activate', userController.activateUser);
  */
 router.put('/integrations/:provider', userController.updateIntegration);
 
+/**
+ * @swagger
+ * /users/integrations/{provider}/sync:
+ *   post:
+ *     summary: Sync data from an integration (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Data synced successfully
+ */
+router.post('/integrations/:provider/sync', userController.syncIntegration);
+
+/**
+ * @swagger
+ * /users/integrations/{provider}:
+ *   delete:
+ *     summary: Remove an integration (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Integration removed
+ */
+router.delete('/integrations/:provider', userController.removeIntegration);
+
 export default router;

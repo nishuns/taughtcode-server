@@ -1,4 +1,5 @@
 import * as userService from '../services/userProfileService.js';
+import * as integrationService from '../services/integrationService.js';
 import * as storageService from '../services/storageService.js';
 import Organization from '../models/organizationModel.js';
 
@@ -193,20 +194,63 @@ const updateIntegration = async (req, res) => {
     try {
         const { provider } = req.params;
         const config = req.body;
-        const userId = req.user.id; // Doc ID from session if available, otherwise we need to find it
-
-        if (!userId && req.user.uid) {
+        
+        // Find user profile to get Doc ID if not in req.user.id
+        let userId = req.user.id;
+        if (!userId) {
             const profile = await userService.getUser(req.user.uid);
-            if (profile) {
-                const updated = await userService.updateIntegration(profile.id, provider, config);
-                return res.json({ success: true, data: updated });
-            }
-        } else if (userId) {
-            const updated = await userService.updateIntegration(userId, provider, config);
-            return res.json({ success: true, data: updated });
+            userId = profile?.id;
         }
 
-        throw new Error('User context not found');
+        if (!userId) throw new Error('User profile not found');
+
+        const updated = await integrationService.updateIntegration(userId, provider, config);
+        res.json({ success: true, data: updated });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Sync data from an integration
+ */
+const syncIntegration = async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const syncOptions = req.body;
+
+        let userId = req.user.id;
+        if (!userId) {
+            const profile = await userService.getUser(req.user.uid);
+            userId = profile?.id;
+        }
+
+        if (!userId) throw new Error('User profile not found');
+
+        const data = await integrationService.syncIntegration(userId, provider, syncOptions);
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Remove an integration
+ */
+const removeIntegration = async (req, res) => {
+    try {
+        const { provider } = req.params;
+
+        let userId = req.user.id;
+        if (!userId) {
+            const profile = await userService.getUser(req.user.uid);
+            userId = profile?.id;
+        }
+
+        if (!userId) throw new Error('User profile not found');
+
+        const updated = await integrationService.removeIntegration(userId, provider);
+        res.json({ success: true, data: updated });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
     }
@@ -221,5 +265,7 @@ export {
     deactivateUser,
     disableUser,
     activateUser,
-    updateIntegration
+    updateIntegration,
+    syncIntegration,
+    removeIntegration
 };
