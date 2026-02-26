@@ -283,3 +283,37 @@ export async function removeClient(orgId, requesterId, clientUrl) {
     logger.info(`Client ${clientUrl} removed from organization ${orgId}`);
     return updated;
 }
+
+/**
+ * Validates if a given client URL has access to a specific API path.
+ * Returns the organization ID if valid, null otherwise.
+ */
+export async function validateClientAccess(clientUrl, apiPath) {
+    if (!clientUrl) return null;
+
+    // Remove trailing slash from clientUrl for consistent matching
+    const normalizedUrl = clientUrl.replace(/\/$/, '');
+    
+    const organizations = await Organization.find();
+    
+    for (const org of organizations) {
+        if (!org.clients) continue;
+        
+        const client = org.clients.find(c => c.url === normalizedUrl || c.url === clientUrl);
+        if (client) {
+            // If apiPath is not provided (e.g. for CORS check), just confirm the client is whitelisted
+            if (!apiPath) return org.id;
+
+            const hasAccess = client.whitelistedApis.some(whitelistPath => {
+                if (whitelistPath === '*') return true;
+                return apiPath.startsWith(whitelistPath);
+            });
+            
+            if (hasAccess) {
+                return org.id;
+            }
+        }
+    }
+    
+    return null;
+}
