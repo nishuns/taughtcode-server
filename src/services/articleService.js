@@ -397,6 +397,22 @@ async function updateArticle(id, authorId, updates) {
 }
 
 /**
+ * Delete article
+ */
+async function deleteArticle(id, authorId) {
+    const article = await Article.findById(id);
+    if (!article) throw new Error('Article not found');
+
+    if (article.authorId !== authorId) {
+        throw new Error('Unauthorized');
+    }
+
+    const deleted = await Article.findByIdAndDelete(id);
+    logger.info(`Article deleted: ${id} by ${authorId}`);
+    return deleted;
+}
+
+/**
  * List articles (with filters)
  */
 async function listArticles(filters = {}) {
@@ -411,5 +427,6 @@ export {
     checkAccess,
     addReview,
     generateArticleContent,
-    publishArticle
+    publishArticle,
+    deleteArticle
 };

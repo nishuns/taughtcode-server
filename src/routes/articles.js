@@ -213,6 +213,29 @@ router.patch('/:id',
 
 /**
  * @swagger
+ * /articles/{id}:
+ *   delete:
+ *     summary: Delete article
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Article deleted
+ */
+router.delete('/:id',
+    isAuthenticated,
+    articleController.deleteArticle
+);
+
+/**
+ * @swagger
  * /articles/{id}/reviews:
  *   post:
  *     summary: Add a review
