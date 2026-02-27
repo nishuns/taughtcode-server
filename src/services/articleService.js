@@ -113,6 +113,7 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
 
     // 2. Generate and Upload Images (Same as before)
     const imageUrls = {};
+    const imagesAttached = [];
     for (const section of structure.sections) {
         if (section.imagePrompt) {
             try {
@@ -144,12 +145,47 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
                         );
                         
                         imageUrls[section.heading] = uploadResult.url;
+                        imagesAttached.push(uploadResult.url);
                     }
                 }
             } catch (err) {
                 logger.warn(`Failed to generate/upload image for section "${section.heading}":`, err);
             }
         }
+    }
+
+    // 2.5 Generate Background Image
+    let backgroundImageUrl = '';
+    try {
+        const bgPrompt = templateId ? `A background image for an article about ${topic} based on a template` : `A high-quality background image for an article about ${topic}`;
+        const bgResult = await aiService.generateImage(bgPrompt);
+        if (bgResult.success && bgResult.images.length > 0) {
+            const imgPart = bgResult.images[0];
+            let buffer, mimeType;
+
+            if (typeof imgPart === 'string') {
+                const response = await fetch(imgPart);
+                const arrayBuffer = await response.arrayBuffer();
+                buffer = Buffer.from(arrayBuffer);
+                mimeType = response.headers.get('content-type') || 'image/png';
+            } else if (imgPart.inlineData) {
+                buffer = Buffer.from(imgPart.inlineData.data, 'base64');
+                mimeType = imgPart.inlineData.mimeType;
+            }
+
+            if (buffer) {
+                const uploadResult = await storageService.uploadUserAsset(
+                    authorId,
+                    buffer,
+                    mimeType,
+                    'background_images'
+                );
+                
+                backgroundImageUrl = uploadResult.url;
+            }
+        }
+    } catch (err) {
+        logger.warn(`Failed to generate/upload background image for topic "${topic}":`, err);
     }
 
     // 3. Generate Full Content
@@ -170,7 +206,9 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
         tags: structure.tags || [],
         status: 'draft',
         access: 'free',
-        templateId // Link to template
+        templateId, // Link to template
+        backgroundImage: backgroundImageUrl,
+        imagesAttached: imagesAttached
     };
 
     return await createArticle(authorId, articleData);

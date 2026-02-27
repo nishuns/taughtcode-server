@@ -10,6 +10,7 @@ export const createArticleSchema = Joi.object({
     price: Joi.number().min(0),
     currency: Joi.string().default('USD'),
     preview: Joi.string().allow(''),
+    backgroundImage: Joi.string().uri().allow(''),
     imagesAttached: Joi.array().items(Joi.string().uri()),
     references: Joi.array().items(Joi.object({
         title: Joi.string(),
@@ -26,6 +27,7 @@ export const updateArticleSchema = Joi.object({
     access: Joi.string().valid('free', 'paid_single', 'subscription_author', 'subscription_platform'),
     price: Joi.number().min(0),
     preview: Joi.string().allow(''),
+    backgroundImage: Joi.string().uri().allow(''),
     imagesAttached: Joi.array().items(Joi.string().uri()),
     references: Joi.array().items(Joi.object({
         title: Joi.string(),
