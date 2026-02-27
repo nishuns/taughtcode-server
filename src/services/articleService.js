@@ -407,6 +407,47 @@ async function deleteArticle(id, authorId) {
         throw new Error('Unauthorized');
     }
 
+    // Helper to extract storage path from public URL
+    const extractPathFromUrl = (url) => {
+        try {
+            if (!url || !url.includes('storage.googleapis.com')) return null;
+            const urlObj = new URL(url);
+            const parts = urlObj.pathname.split('/');
+            if (parts.length > 2) {
+                return parts.slice(2).join('/');
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // Delete background image
+    if (article.backgroundImage) {
+        const path = extractPathFromUrl(article.backgroundImage);
+        if (path) {
+            try {
+                await storageService.deleteFile(path);
+            } catch (err) {
+                logger.warn(`Failed to delete background image for article ${id}: ${err.message}`);
+            }
+        }
+    }
+
+    // Delete attached images
+    if (article.imagesAttached && article.imagesAttached.length > 0) {
+        for (const url of article.imagesAttached) {
+            const path = extractPathFromUrl(url);
+            if (path) {
+                try {
+                    await storageService.deleteFile(path);
+                } catch (err) {
+                    logger.warn(`Failed to delete attached image ${url} for article ${id}: ${err.message}`);
+                }
+            }
+        }
+    }
+
     const deleted = await Article.findByIdAndDelete(id);
     logger.info(`Article deleted: ${id} by ${authorId}`);
     return deleted;
