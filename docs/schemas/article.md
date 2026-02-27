@@ -10,6 +10,8 @@ Represents a content piece (article, blog post, tutorial) in the system.
 | `description` | String | No | Short summary or meta description. |
 | `content` | String | Yes | Main body content (HTML/Markdown). |
 | `preview` | String | No | Snippet shown for locked content. |
+| `backgroundImage` | String | No | Background Image URL. |
+| `imagesAttached` | Array<String> | No | Array of image URLs attached to the article. |
 | `authorId` | String | Yes | Reference to User UID. |
 | `tags` | Array<String> | No | List of tag names. |
 | `status` | String | Yes | `draft`, `published`, or `archived`. Default: `draft`. |

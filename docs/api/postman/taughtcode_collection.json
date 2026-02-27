@@ -412,7 +412,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\"\n}",
+							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\",\n    \"backgroundImage\": \"https://example.com/bg.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -531,7 +531,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\": \"Updated description\"\n}",
+							"raw": "{\n    \"description\": \"Updated description\",\n    \"backgroundImage\": \"https://example.com/updated_bg.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -577,6 +577,36 @@
 								"articles",
 								":id",
 								"publish"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ARTICLE_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Article",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/articles/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":id"
 							],
 							"variable": [
 								{
