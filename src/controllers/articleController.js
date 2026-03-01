@@ -70,10 +70,15 @@ const updateArticle = async (req, res) => {
  */
 const listArticles = async (req, res) => {
     try {
-        const filters = req.query;
-        // Default to published only if not author/admin filtering?
-        // For now, simple list.
-        const articles = await articleService.listArticles(filters);
+        const { limit, skip, sort, ...filters } = req.query;
+        
+        const options = {
+            limit: limit ? parseInt(limit) : 20,
+            skip: skip ? parseInt(skip) : 0,
+            sort: sort || { createdAt: -1 }
+        };
+
+        const articles = await articleService.listArticles(filters, options);
 
         res.json({
             success: true,
@@ -190,9 +195,32 @@ const deleteAllArticles = async (req, res) => {
     }
 };
 
+/**
+ * Get article by ID
+ * Private route (requires auth)
+ */
+const getArticleById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const article = await articleService.getArticleById(id);
+
+        if (article.authorId !== req.user.uid && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+
+        res.json({
+            success: true,
+            data: article
+        });
+    } catch (error) {
+        res.status(404).json({ success: false, error: error.message });
+    }
+};
+
 export {
     createArticle,
     getArticle,
+    getArticleById,
     updateArticle,
     listArticles,
     addReview,

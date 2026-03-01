@@ -178,6 +178,11 @@ router.delete('/',
     articleController.deleteAllArticles
 );
 
+router.get('/fetch/:id',
+    isAuthenticated,
+    articleController.getArticleById
+);
+
 /**
  * @swagger
  * /articles/{slug}:

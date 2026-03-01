@@ -382,6 +382,18 @@ async function checkAccess(article, userId) {
 }
 
 /**
+ * Get article by ID
+ * @param {string} id 
+ */
+async function getArticleById(id) {
+    const article = await Article.findById(id);
+    if (!article) {
+        throw new Error('Article not found');
+    }
+    return article;
+}
+
+/**
  * Update article
  */
 async function updateArticle(id, authorId, updates) {
@@ -474,10 +486,10 @@ async function deleteAllArticles(authorId) {
 }
 
 /**
- * List articles (with filters)
+ * List articles (with filters and options)
  */
-async function listArticles(filters = {}) {
-    return await Article.find(filters);
+async function listArticles(filters = {}, options = {}) {
+    return await Article.find(filters, options);
 }
 
 export {
