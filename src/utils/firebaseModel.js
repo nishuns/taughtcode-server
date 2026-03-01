@@ -204,8 +204,59 @@ class FirebaseModel {
             ref = ref.offset(options.skip)
         }
 
-        const snapshot = await ref.get()
-        return snapshot.docs.map(doc => ({ id: doc.id, ...this._normalizeData(doc.data()) }))
+        try {
+            const snapshot = await ref.get()
+            return snapshot.docs.map(doc => ({ id: doc.id, ...this._normalizeData(doc.data()) }))
+        } catch (error) {
+            // Handle missing index error by fetching without sort and sorting in memory
+            if (error.message.includes('FAILED_PRECONDITION') && error.message.includes('index') && options.sort) {
+                console.warn('Firestore missing index. Falling back to in-memory sort. Please create the index suggested in the error message.');
+                
+                // Fetch without the Firestore orderby
+                // We recreate the ref without the orderby parts. 
+                // Since this class doesn't store the filter state easily to "undo" orderby, 
+                // it's easier to just re-run the query logic without the sort.
+                let fallbackRef = this.collection;
+                for (const [field, value] of Object.entries(query)) {
+                    if (typeof value === 'object' && value !== null) {
+                        if (value.$gte !== undefined) fallbackRef = fallbackRef.where(field, '>=', value.$gte)
+                        if (value.$gt !== undefined) fallbackRef = fallbackRef.where(field, '>', value.$gt)
+                        if (value.$lte !== undefined) fallbackRef = fallbackRef.where(field, '<=', value.$lte)
+                        if (value.$lt !== undefined) fallbackRef = fallbackRef.where(field, '<', value.$lt)
+                        if (value.$ne !== undefined) fallbackRef = fallbackRef.where(field, '!=', value.$ne)
+                        if (value.$in !== undefined) fallbackRef = fallbackRef.where(field, 'in', value.$in)
+                    } else {
+                        fallbackRef = fallbackRef.where(field, '==', value)
+                    }
+                }
+                
+                // Still apply limit if possible (though we might need to fetch more to sort correctly)
+                // For a proper sort, we'd need ALL matching docs, then sort, then limit.
+                const fallbackSnapshot = await fallbackRef.get();
+                let results = fallbackSnapshot.docs.map(doc => ({ id: doc.id, ...this._normalizeData(doc.data()) }));
+                
+                // Perform in-memory sort
+                const sortEntries = typeof options.sort === 'string' 
+                    ? [[options.sort.replace(/^-/, ''), options.sort.startsWith('-') ? -1 : 1]]
+                    : Object.entries(options.sort);
+
+                results.sort((a, b) => {
+                    for (const [field, direction] of sortEntries) {
+                        const dir = (direction === -1 || direction === 'desc') ? -1 : 1;
+                        if (a[field] < b[field]) return -1 * dir;
+                        if (a[field] > b[field]) return 1 * dir;
+                    }
+                    return 0;
+                });
+
+                // Apply skip and limit in memory
+                if (options.skip) results = results.slice(options.skip);
+                if (options.limit) results = results.slice(0, options.limit);
+                
+                return results;
+            }
+            throw error;
+        }
     }
 
     async findByIdAndUpdate(id, updateData, options = {}) {
