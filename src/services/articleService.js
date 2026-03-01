@@ -454,6 +454,26 @@ async function deleteArticle(id, authorId) {
 }
 
 /**
+ * Delete all articles for an author
+ */
+async function deleteAllArticles(authorId) {
+    const articles = await Article.find({ authorId });
+    let deletedCount = 0;
+    
+    for (const article of articles) {
+        try {
+            await deleteArticle(article.id, authorId);
+            deletedCount++;
+        } catch (err) {
+            logger.warn(`Failed to delete article ${article.id} during bulk delete: ${err.message}`);
+        }
+    }
+    
+    logger.info(`Deleted ${deletedCount} articles for author ${authorId}`);
+    return deletedCount;
+}
+
+/**
  * List articles (with filters)
  */
 async function listArticles(filters = {}) {
@@ -469,5 +489,6 @@ export {
     addReview,
     generateArticleContent,
     publishArticle,
-    deleteArticle
+    deleteArticle,
+    deleteAllArticles
 };

@@ -8,7 +8,7 @@ import swaggerSpec from './config/swagger.js';
 import 'dotenv/config';
 import initNotificationHandler from './services/notificationHandler.js/index.js';
 import { startBullWorker } from './workers/bullWorker.js';
-import { validateClientAccess } from './services/organizationService.js';
+import { getClientAppByUrl } from './services/clientAppService.js';
 
 const app = express();
 
@@ -41,9 +41,9 @@ app.use(cors({
         }
 
         try {
-            // Check if origin is whitelisted in any organization
-            const orgId = await validateClientAccess(origin);
-            if (orgId) {
+            // Check if origin is whitelisted in any global client application
+            const clientApp = await getClientAppByUrl(origin);
+            if (clientApp) {
                 return callback(null, true);
             }
         } catch (error) {

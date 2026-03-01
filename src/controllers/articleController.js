@@ -172,6 +172,24 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+/**
+ * Delete all articles
+ */
+const deleteAllArticles = async (req, res) => {
+    try {
+        const { uid } = req.user;
+
+        const deletedCount = await articleService.deleteAllArticles(uid);
+
+        res.json({
+            success: true,
+            message: `Successfully deleted ${deletedCount} articles`
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 export {
     createArticle,
     getArticle,
@@ -180,5 +198,6 @@ export {
     addReview,
     generateArticle,
     publishArticle,
-    deleteArticle
+    deleteArticle,
+    deleteAllArticles
 };

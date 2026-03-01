@@ -93,6 +93,14 @@ Delete an existing article and its associated storage assets (background images 
 - **Auth**: Required (Author only)
 - **Success Response**: `200 OK` with a success message.
 
+### Delete All Articles
+Delete all articles and their associated storage assets for the currently authenticated user.
+
+- **URL**: `/`
+- **Method**: `DELETE`
+- **Auth**: Required
+- **Success Response**: `200 OK` with a success message indicating the number of deleted articles.
+
 ## Engagement
 
 ### Add Review

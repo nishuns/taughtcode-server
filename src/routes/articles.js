@@ -163,6 +163,23 @@ router.get('/', articleController.listArticles);
 
 /**
  * @swagger
+ * /articles:
+ *   delete:
+ *     summary: Delete all articles for the authenticated user
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All articles deleted successfully
+ */
+router.delete('/',
+    isAuthenticated,
+    articleController.deleteAllArticles
+);
+
+/**
+ * @swagger
  * /articles/{slug}:
  *   get:
  *     summary: Get article by slug
