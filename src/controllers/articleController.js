@@ -150,6 +150,46 @@ const publishArticle = async (req, res) => {
     }
 };
 
+/**
+ * Delete article
+ */
+const deleteArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { uid } = req.user;
+
+        await articleService.deleteArticle(id, uid);
+
+        res.json({
+            success: true,
+            message: 'Article deleted successfully'
+        });
+    } catch (error) {
+        if (error.message === 'Unauthorized') {
+            return res.status(403).json({ success: false, error: error.message });
+        }
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Delete all articles
+ */
+const deleteAllArticles = async (req, res) => {
+    try {
+        const { uid } = req.user;
+
+        const deletedCount = await articleService.deleteAllArticles(uid);
+
+        res.json({
+            success: true,
+            message: `Successfully deleted ${deletedCount} articles`
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 export {
     createArticle,
     getArticle,
@@ -157,5 +197,7 @@ export {
     listArticles,
     addReview,
     generateArticle,
-    publishArticle
+    publishArticle,
+    deleteArticle,
+    deleteAllArticles
 };

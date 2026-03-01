@@ -68,6 +68,38 @@ export async function createOrganization(orgData, ownerId) {
 }
 
 /**
+ * Updates an organization's details.
+ */
+export async function updateOrganization(orgId, requesterId, updates) {
+    const org = await getOrganizationById(orgId);
+    const members = org.members || [];
+
+    const requesterRole = members.find(m => m.userId === requesterId)?.role;
+    if (requesterRole !== ROLES.ADMIN) {
+        throw new Error('Only organization admins can update organization details');
+    }
+
+    // Prevent updating sensitive internal fields
+    delete updates.id;
+    delete updates.ownerId;
+    delete updates.members;
+    delete updates.clients;
+    delete updates.status;
+    delete updates.createdAt;
+
+    const updated = await Organization.findByIdAndUpdate(orgId, updates, { new: true });
+    logger.info(`Organization ${orgId} updated by ${requesterId}`);
+    return updated;
+}
+
+/**
+ * Gets all organizations.
+ */
+export async function getAllOrganizations() {
+    return await Organization.find({});
+}
+
+/**
  * Gets an organization by ID.
  */
 export async function getOrganizationById(orgId) {
@@ -136,7 +168,7 @@ export async function updateMemberRole(orgId, requesterId, targetUserId, newRole
     const currentTargetRole = members[targetMemberIndex].role;
 
     if (!canChangeRole(requesterRole, currentTargetRole, newRole)) {
-        throw new Error('Insufficient permissions to change this user's role');
+        throw new Error('Insufficient permissions to change this user\'s role');
     }
 
     if (targetUserId === org.ownerId && newRole !== ROLES.ADMIN) {
@@ -189,90 +221,5 @@ export async function removeMember(orgId, requesterId, targetUserId) {
 
     const updated = await Organization.findByIdAndUpdate(orgId, { members: updatedMembers }, { new: true });
     logger.info(`User ${targetUserId} removed from organization ${orgId}`);
-    return updated;
-}
-
-/**
- * Adds a new client to an organization's whitelist.
- * Only organization admins can manage clients.
- */
-export async function addClient(orgId, requesterId, clientUrl, whitelistedApis = []) {
-    const org = await getOrganizationById(orgId);
-    const members = org.members || [];
-
-    const requesterRole = members.find(m => m.userId === requesterId)?.role;
-    if (requesterRole !== ROLES.ADMIN) {
-        throw new Error('Only organization admins can manage clients');
-    }
-
-    const clients = org.clients || [];
-    if (clients.some(c => c.url === clientUrl)) {
-        throw new Error('Client URL is already added to this organization');
-    }
-
-    const updatedClients = [...clients, {
-        url: clientUrl,
-        whitelistedApis,
-        addedAt: new Date()
-    }];
-
-    const updated = await Organization.findByIdAndUpdate(orgId, { clients: updatedClients }, { new: true });
-    logger.info(`Client ${clientUrl} added to organization ${orgId}`);
-    return updated;
-}
-
-/**
- * Updates a client's whitelisted APIs.
- * Only organization admins can manage clients.
- */
-export async function updateClient(orgId, requesterId, clientUrl, whitelistedApis) {
-    const org = await getOrganizationById(orgId);
-    const members = org.members || [];
-
-    const requesterRole = members.find(m => m.userId === requesterId)?.role;
-    if (requesterRole !== ROLES.ADMIN) {
-        throw new Error('Only organization admins can manage clients');
-    }
-
-    const clients = org.clients || [];
-    const clientIndex = clients.findIndex(c => c.url === clientUrl);
-    
-    if (clientIndex === -1) {
-        throw new Error('Client not found in this organization');
-    }
-
-    clients[clientIndex] = {
-        ...clients[clientIndex],
-        whitelistedApis,
-        updatedAt: new Date()
-    };
-
-    const updated = await Organization.findByIdAndUpdate(orgId, { clients }, { new: true });
-    logger.info(`Client ${clientUrl} updated in organization ${orgId}`);
-    return updated;
-}
-
-/**
- * Removes a client from an organization's whitelist.
- * Only organization admins can manage clients.
- */
-export async function removeClient(orgId, requesterId, clientUrl) {
-    const org = await getOrganizationById(orgId);
-    const members = org.members || [];
-
-    const requesterRole = members.find(m => m.userId === requesterId)?.role;
-    if (requesterRole !== ROLES.ADMIN) {
-        throw new Error('Only organization admins can manage clients');
-    }
-
-    const clients = org.clients || [];
-    const updatedClients = clients.filter(c => c.url !== clientUrl);
-
-    if (clients.length === updatedClients.length) {
-        throw new Error('Client not found in this organization');
-    }
-
-    const updated = await Organization.findByIdAndUpdate(orgId, { clients: updatedClients }, { new: true });
-    logger.info(`Client ${clientUrl} removed from organization ${orgId}`);
     return updated;
 }

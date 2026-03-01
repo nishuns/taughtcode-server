@@ -34,7 +34,12 @@ const onboardUser = async (req, res) => {
                 name: profileData.organizationName,
                 ownerId: uid,
                 type: profileData.organizationType || 'personal',
-                description: `Organization for ${profileData.displayName}`
+                description: `Organization for ${profileData.displayName}`,
+                members: [{
+                    userId: uid,
+                    role: 'admin',
+                    addedAt: new Date()
+                }]
             });
             organizationId = newOrg.id;
         }
@@ -66,7 +71,8 @@ const onboardUser = async (req, res) => {
  */
 const getMe = async (req, res) => {
     try {
-        const user = await userService.getUser(req.user.uid);
+        let user = await userService.getUser(req.user.uid);
+        
         if (!user && req.user) {
             return res.json({
                 success: true,
@@ -76,6 +82,15 @@ const getMe = async (req, res) => {
                 }
             });
         }
+
+        // Fix-up: If user is an owner of an organization but it's not linked in their profile
+        if (user && !user.organizationId) {
+            const org = await Organization.findOne({ ownerId: req.user.uid });
+            if (org) {
+                user = await userService.updateUser(req.user.uid, { organizationId: org.id });
+            }
+        }
+
         res.json({ success: true, data: user });
     } catch (error) {
         res.status(404).json({ success: false, error: error.message });

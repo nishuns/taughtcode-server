@@ -8,6 +8,7 @@ import swaggerSpec from './config/swagger.js';
 import 'dotenv/config';
 import initNotificationHandler from './services/notificationHandler.js/index.js';
 import { startBullWorker } from './workers/bullWorker.js';
+import { getClientAppByUrl } from './services/clientAppService.js';
 
 const app = express();
 
@@ -24,7 +25,33 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: async (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+
+        // Allow static configured origin
+        const allowedOrigin = process.env.CORS_ORIGIN || '*';
+        if (allowedOrigin === '*' || allowedOrigin === origin) {
+            return callback(null, true);
+        }
+
+        // Allow localhost in development
+        if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
+            return callback(null, true);
+        }
+
+        try {
+            // Check if origin is whitelisted in any global client application
+            const clientApp = await getClientAppByUrl(origin);
+            if (clientApp) {
+                return callback(null, true);
+            }
+        } catch (error) {
+            console.error('CORS validation error:', error);
+        }
+
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 

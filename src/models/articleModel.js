@@ -30,6 +30,10 @@ const articleSchema = {
         type: String, // Short excerpt for locked content
         default: ''
     },
+    backgroundImage: {
+        type: String, // Background Image URL
+        default: ''
+    },
     imagesAttached: {
         type: Array, // Array of image URLs
         default: []

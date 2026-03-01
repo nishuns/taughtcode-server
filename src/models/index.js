@@ -7,6 +7,7 @@ import reviewModel from './reviewModel.js';
 import tagModel from './tagModel.js';
 import articleTemplateModel from './articleTemplateModel.js';
 import jobModel from './jobModel.js';
+import clientAppModel from './clientAppModel.js';
 
 // Export specific models
 export const User = userProfileModel;
@@ -17,6 +18,7 @@ export const Review = reviewModel;
 export const Tag = tagModel;
 export const ArticleTemplate = articleTemplateModel;
 export const Job = jobModel;
+export const ClientApp = clientAppModel;
 
 // Helper to create simple models on the fly
 export const createModel = (collectionName, schema = null) => {

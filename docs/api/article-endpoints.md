@@ -42,6 +42,8 @@ Create a new article draft.
     - `tags` (Array<String>)
     - `access` (String): `free`, `paid_single`, etc.
     - `price` (Number)
+    - `backgroundImage` (String, Optional)
+    - `imagesAttached` (Array<String>, Optional)
 - **Success Response**: `201 Created` with Article object.
 
 ### List Articles
@@ -82,6 +84,22 @@ Publish a draft article to the public documentation system.
 - **Method**: `POST`
 - **Auth**: Required (Author only)
 - **Success Response**: `200 OK` with published Article.
+
+### Delete Article
+Delete an existing article and its associated storage assets (background images and attached images). Only the author can delete.
+
+- **URL**: `/:id`
+- **Method**: `DELETE`
+- **Auth**: Required (Author only)
+- **Success Response**: `200 OK` with a success message.
+
+### Delete All Articles
+Delete all articles and their associated storage assets for the currently authenticated user.
+
+- **URL**: `/`
+- **Method**: `DELETE`
+- **Auth**: Required
+- **Success Response**: `200 OK` with a success message indicating the number of deleted articles.
 
 ## Engagement
 

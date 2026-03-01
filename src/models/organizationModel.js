@@ -35,10 +35,6 @@ const organizationSchema = {
         type: Array, // Array of { userId, role, addedAt }
         default: []
     },
-    clients: {
-        type: Array, // Array of { url: string, whitelistedApis: string[], addedAt: Date }
-        default: []
-    },
     settings: {
         type: Object,
         default: {

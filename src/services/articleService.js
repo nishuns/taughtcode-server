@@ -113,6 +113,7 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
 
     // 2. Generate and Upload Images (Same as before)
     const imageUrls = {};
+    const imagesAttached = [];
     for (const section of structure.sections) {
         if (section.imagePrompt) {
             try {
@@ -144,12 +145,47 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
                         );
                         
                         imageUrls[section.heading] = uploadResult.url;
+                        imagesAttached.push(uploadResult.url);
                     }
                 }
             } catch (err) {
                 logger.warn(`Failed to generate/upload image for section "${section.heading}":`, err);
             }
         }
+    }
+
+    // 2.5 Generate Background Image
+    let backgroundImageUrl = '';
+    try {
+        const bgPrompt = templateId ? `A background image for an article about ${topic} based on a template` : `A high-quality background image for an article about ${topic}`;
+        const bgResult = await aiService.generateImage(bgPrompt);
+        if (bgResult.success && bgResult.images.length > 0) {
+            const imgPart = bgResult.images[0];
+            let buffer, mimeType;
+
+            if (typeof imgPart === 'string') {
+                const response = await fetch(imgPart);
+                const arrayBuffer = await response.arrayBuffer();
+                buffer = Buffer.from(arrayBuffer);
+                mimeType = response.headers.get('content-type') || 'image/png';
+            } else if (imgPart.inlineData) {
+                buffer = Buffer.from(imgPart.inlineData.data, 'base64');
+                mimeType = imgPart.inlineData.mimeType;
+            }
+
+            if (buffer) {
+                const uploadResult = await storageService.uploadUserAsset(
+                    authorId,
+                    buffer,
+                    mimeType,
+                    'background_images'
+                );
+                
+                backgroundImageUrl = uploadResult.url;
+            }
+        }
+    } catch (err) {
+        logger.warn(`Failed to generate/upload background image for topic "${topic}":`, err);
     }
 
     // 3. Generate Full Content
@@ -170,7 +206,9 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
         tags: structure.tags || [],
         status: 'draft',
         access: 'free',
-        templateId // Link to template
+        templateId, // Link to template
+        backgroundImage: backgroundImageUrl,
+        imagesAttached: imagesAttached
     };
 
     return await createArticle(authorId, articleData);
@@ -359,6 +397,83 @@ async function updateArticle(id, authorId, updates) {
 }
 
 /**
+ * Delete article
+ */
+async function deleteArticle(id, authorId) {
+    const article = await Article.findById(id);
+    if (!article) throw new Error('Article not found');
+
+    if (article.authorId !== authorId) {
+        throw new Error('Unauthorized');
+    }
+
+    // Helper to extract storage path from public URL
+    const extractPathFromUrl = (url) => {
+        try {
+            if (!url || !url.includes('storage.googleapis.com')) return null;
+            const urlObj = new URL(url);
+            const parts = urlObj.pathname.split('/');
+            if (parts.length > 2) {
+                return parts.slice(2).join('/');
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // Delete background image
+    if (article.backgroundImage) {
+        const path = extractPathFromUrl(article.backgroundImage);
+        if (path) {
+            try {
+                await storageService.deleteFile(path);
+            } catch (err) {
+                logger.warn(`Failed to delete background image for article ${id}: ${err.message}`);
+            }
+        }
+    }
+
+    // Delete attached images
+    if (article.imagesAttached && article.imagesAttached.length > 0) {
+        for (const url of article.imagesAttached) {
+            const path = extractPathFromUrl(url);
+            if (path) {
+                try {
+                    await storageService.deleteFile(path);
+                } catch (err) {
+                    logger.warn(`Failed to delete attached image ${url} for article ${id}: ${err.message}`);
+                }
+            }
+        }
+    }
+
+    const deleted = await Article.findByIdAndDelete(id);
+    logger.info(`Article deleted: ${id} by ${authorId}`);
+    return deleted;
+}
+
+/**
+ * Delete all articles for an author
+ */
+async function deleteAllArticles(authorId) {
+    const articles = await Article.find({ authorId });
+    let deletedCount = 0;
+    
+    for (const article of articles) {
+        try {
+            await deleteArticle(article.id, authorId);
+            deletedCount++;
+        } catch (err) {
+            logger.warn(`Failed to delete article ${article.id} during bulk delete: ${err.message}`);
+        }
+    }
+    
+    logger.info(`Deleted ${deletedCount} articles for author ${authorId}`);
+    return deletedCount;
+}
+
+/**
  * List articles (with filters)
  */
 async function listArticles(filters = {}) {
@@ -373,5 +488,7 @@ export {
     checkAccess,
     addReview,
     generateArticleContent,
-    publishArticle
+    publishArticle,
+    deleteArticle,
+    deleteAllArticles
 };

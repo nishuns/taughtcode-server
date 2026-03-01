@@ -282,12 +282,123 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Articles",
-			"item": [
+				},
+				{
+					"name": "Update Integration",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accessToken\": \"ghp_your_personal_access_token\",\n    \"owner\": \"your-github-username\",\n    \"repo\": \"your-repo-name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/integrations/:provider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"integrations",
+								":provider"
+							],
+							"variable": [
+								{
+									"key": "provider",
+									"value": "github"
+								}
+							]
+						}
+					                                        },
+					                                        "response": []
+					                                },
+					                                {
+					                                        "name": "Sync Integration",
+					                                        "request": {
+					                                                "method": "POST",
+					                                                "header": [
+					                                                        {
+					                                                                "key": "Authorization",
+					                                                                "value": "Bearer {{auth_token}}",
+					                                                                "type": "text"
+					                                                        }
+					                                                ],
+					                                                "body": {
+					                                                        "mode": "raw",
+					                                                        "raw": "{\n    \"path\": \"\"\n}",
+					                                                        "options": {
+					                                                                "raw": {
+					                                                                        "language": "json"
+					                                                                }
+					                                                        }
+					                                                },
+					                                                "url": {
+					                                                        "raw": "{{base_url}}/users/integrations/:provider/sync",
+					                                                        "host": [
+					                                                                "{{base_url}}"
+					                                                        ],
+					                                                        "path": [
+					                                                                "users",
+					                                                                "integrations",
+					                                                                ":provider",
+					                                                                "sync"
+					                                                        ],
+					                                                        "variable": [
+					                                                                {
+					                                                                        "key": "provider",
+					                                                                        "value": "github"
+					                                                                }
+					                                                        ]
+					                                                }
+					                                        },
+					                                        "response": []
+					                                },
+					                                {
+					                                        "name": "Remove Integration",
+					                                        "request": {
+					                                                "method": "DELETE",
+					                                                "header": [
+					                                                        {
+					                                                                "key": "Authorization",
+					                                                                "value": "Bearer {{auth_token}}",
+					                                                                "type": "text"
+					                                                        }
+					                                                ],
+					                                                "url": {
+					                                                        "raw": "{{base_url}}/users/integrations/:provider",
+					                                                        "host": [
+					                                                                "{{base_url}}"
+					                                                        ],
+					                                                        "path": [
+					                                                                "users",
+					                                                                "integrations",
+					                                                                ":provider"
+					                                                        ],
+					                                                        "variable": [
+					                                                                {
+					                                                                        "key": "provider",
+					                                                                        "value": "github"
+					                                                                }
+					                                                        ]
+					                                                }
+					                                        },
+					                                        "response": []
+					                                }
+					                        ]
+					                },
+					                {
+					                        "name": "Articles",			"item": [
 				{
 					"name": "Create Article",
 					"request": {
@@ -301,7 +412,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\"\n}",
+							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\",\n    \"backgroundImage\": \"https://example.com/bg.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -420,7 +531,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\": \"Updated description\"\n}",
+							"raw": "{\n    \"description\": \"Updated description\",\n    \"backgroundImage\": \"https://example.com/updated_bg.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -472,6 +583,59 @@
 									"key": "id",
 									"value": "ARTICLE_ID"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Article",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/articles/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ARTICLE_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All Articles",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/articles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles"
 							]
 						}
 					},

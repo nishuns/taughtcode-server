@@ -163,6 +163,23 @@ router.get('/', articleController.listArticles);
 
 /**
  * @swagger
+ * /articles:
+ *   delete:
+ *     summary: Delete all articles for the authenticated user
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All articles deleted successfully
+ */
+router.delete('/',
+    isAuthenticated,
+    articleController.deleteAllArticles
+);
+
+/**
+ * @swagger
  * /articles/{slug}:
  *   get:
  *     summary: Get article by slug
@@ -209,6 +226,29 @@ router.patch('/:id',
     isAuthenticated, 
     validateRequest(updateArticleSchema), 
     articleController.updateArticle
+);
+
+/**
+ * @swagger
+ * /articles/{id}:
+ *   delete:
+ *     summary: Delete article
+ *     tags: [Articles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Article deleted
+ */
+router.delete('/:id',
+    isAuthenticated,
+    articleController.deleteArticle
 );
 
 /**

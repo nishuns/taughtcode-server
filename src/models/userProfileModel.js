@@ -71,6 +71,12 @@ const userProfileSchema = {
             language: 'en'
         }
     },
+    integrations: {
+        type: Object,
+        default: {
+            github: null // Stores { accessToken, owner, repo, updatedAt }
+        }
+    },
     organizationId: {
         type: String, // Link to Organization Model
         default: null
