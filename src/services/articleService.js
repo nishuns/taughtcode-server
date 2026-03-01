@@ -495,6 +495,7 @@ async function listArticles(filters = {}, options = {}) {
 export {
     createArticle,
     getArticleBySlug,
+    getArticleById,
     updateArticle,
     listArticles,
     checkAccess,
