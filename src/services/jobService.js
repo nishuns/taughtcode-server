@@ -3,6 +3,7 @@ import logger from '../utils/logger.js';
 import { EventEmitter } from 'events';
 import { getWorkerFunction } from '../workers/jobRegistry.js';
 import { jobQueue } from '../workers/queueFactory.js';
+import { realtimeDb } from '../config/firebase.js';
 
 // Event Emitter for notifications
 export const jobEvents = new EventEmitter();
@@ -99,6 +100,22 @@ async function updateJobStatus(jobId, status, progress, result = null, error = n
 
     const updatedJob = await Job.findByIdAndUpdate(jobId, updates, { new: true });
     
+    // Sync to Realtime Database for client-side notifications
+    if (updatedJob.userId) {
+        try {
+            await realtimeDb.ref(`notifications/${updatedJob.userId}/jobs/${jobId}`).set({
+                id: jobId,
+                type: updatedJob.type,
+                status: updatedJob.status,
+                progress: updatedJob.progress,
+                updatedAt: Date.now(),
+                message: error || (status === 'completed' ? 'Job completed successfully' : null)
+            });
+        } catch (dbError) {
+            logger.error(`Error syncing job ${jobId} to Realtime DB:`, dbError);
+        }
+    }
+
     // Notify
     jobEvents.emit('statusUpdate', updatedJob);
     logger.info(`Job ${jobId} status: ${status}`);
