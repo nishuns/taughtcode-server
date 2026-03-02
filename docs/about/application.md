@@ -19,6 +19,12 @@ The primary mission of TaughtCode is to provide developers and content creators 
 - **Async Job Queue**: Handles long-running AI tasks reliably using BullMQ and Redis.
 - **Professional API Design**: Comprehensive RESTful endpoints with full Swagger/OpenAPI documentation and Postman support.
 
+## Developer Resources
+
+To facilitate rapid development and testing, we provide a pre-configured Postman collection containing all available endpoints, environment variables, and example payloads.
+
+- **Download Postman Collection**: [taughtcode_collection.json](../api/postman/taughtcode_collection.json)
+
 ## Vision
 
 TaughtCode aims to become the standard for "Smart Backend" architectures—where infrastructure doesn't just store data, but actively participates in the value creation process through intelligent automation and orchestration.
