@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ARTICLE_TEMPLATE_CATEGORY_LIST } from '../config/articleTemplates.js';
 
 export const createArticleSchema = Joi.object({
     title: Joi.string().required().min(3).max(200),
@@ -49,5 +50,5 @@ export const generateArticleSchema = Joi.object({
 
 export const generateTemplateSchema = Joi.object({
     description: Joi.string().required().min(10).max(1000),
-    category: Joi.string().valid('tutorial', 'case-study', 'blog-post', 'news-update', 'technical-guide').default('blog-post')
+    category: Joi.string().valid(...ARTICLE_TEMPLATE_CATEGORY_LIST).default('blog-post')
 });
