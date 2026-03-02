@@ -209,10 +209,30 @@ class GeminiAIProvider extends BaseAIProvider {
     async generateImage(prompt, options = {}) {
         try {
             const model = this._getModelName(options.model || "image");
-            const response = await this.ai.models.generateContent({
+            
+            // Set up config for image generation
+            const config = {
                 model: model,
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            });
+            };
+            
+            // Add image specific configuration if provided
+            if (options.aspectRatio || options.imageSize) {
+                config.config = {
+                    responseModalities: ['TEXT', 'IMAGE'],
+                    imageConfig: {}
+                };
+                
+                if (options.aspectRatio) {
+                    config.config.imageConfig.aspectRatio = options.aspectRatio;
+                }
+                
+                if (options.imageSize) {
+                    config.config.imageConfig.imageSize = options.imageSize;
+                }
+            }
+            
+            const response = await this.ai.models.generateContent(config);
 
             const images = [];
             // Check if candidates and content exist

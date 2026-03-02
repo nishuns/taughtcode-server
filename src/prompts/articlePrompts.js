@@ -23,19 +23,21 @@ Please provide the output in strict JSON format with the following structure:
       "heading": "Introduction",
       "contentBrief": "Briefly introduce the topic...",
       "imagePrompt": "A high-quality, photorealistic image describing..." (optional, null if no image needed),
+      "imageAspectRatio": "16:9", // Optional: "1:1", "4:3", "16:9", "9:16"
       "layout": "standard" // Options: "standard", "two-column", "hero", "quote-block"
     },
     {
       "heading": "Core Concept",
       "contentBrief": "Details about section 1...",
       "imagePrompt": "Description of an image illustrating this section...",
+      "imageAspectRatio": "4:3",
       "layout": "two-column"
     }
     // ... more sections
   ]
 }
 
-Ensure the image prompts are descriptive and suitable for an AI image generator. Vary the layout types to create a visually engaging blog post.
+Ensure the image prompts are descriptive and suitable for an AI image generator. Vary the layout types and aspect ratios to create a visually engaging blog post.
 `;
 };
 
@@ -105,6 +107,7 @@ Please provide the output in strict JSON format matching this structure:
       "heading": "Section Heading (Generic)",
       "contentBrief": "Instructions on what this section should cover (e.g., 'Explain the core concept of...')",
       "imagePrompt": "Description of a generic image for this section (optional)",
+      "imageAspectRatio": "16:9", // "1:1", "4:3", "16:9", "9:16"
       "layout": "standard"
     }
     // ... 4-6 sections recommended
