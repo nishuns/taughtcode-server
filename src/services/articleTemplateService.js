@@ -94,11 +94,39 @@ async function incrementUsage(id) {
     }
 }
 
+/**
+ * Update a template
+ */
+async function updateTemplate(id, updates) {
+    const template = await getTemplate(id);
+    if (!template) throw new Error('Template not found');
+    
+    // Prevent updating sensitive fields
+    delete updates.id;
+    delete updates.authorId;
+    delete updates.slug;
+
+    return await ArticleTemplate.findByIdAndUpdate(id, updates, { new: true });
+}
+
+/**
+ * Delete a template
+ */
+async function deleteTemplate(id) {
+    const template = await getTemplate(id);
+    if (!template) throw new Error('Template not found');
+    
+    await ArticleTemplate.findByIdAndDelete(id);
+    return true;
+}
+
 export {
     createTemplate,
     generateTemplate,
     getTemplate,
     getTemplateBySlug,
     listTemplates,
-    incrementUsage
+    incrementUsage,
+    updateTemplate,
+    deleteTemplate
 };
