@@ -1,4 +1,5 @@
 import FirebaseModel from '../utils/firebaseModel.js';
+import { ARTICLE_TEMPLATE_CATEGORY_LIST } from '../config/articleTemplates.js';
 
 /**
  * Article Template Schema Definition
@@ -21,7 +22,7 @@ const articleTemplateSchema = {
     },
     category: {
         type: String,
-        enum: ['tutorial', 'case-study', 'blog-post', 'news-update', 'technical-guide'],
+        enum: ARTICLE_TEMPLATE_CATEGORY_LIST,
         default: 'blog-post'
     },
     // The skeleton of the article

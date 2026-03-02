@@ -699,7 +699,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\": \"A comprehensive tutorial on Machine Learning basics\",\n    \"category\": \"tutorial\"\n}",
+							"raw": "{\n    \"description\": \"A comprehensive research analysis on quantum computing\",\n    \"category\": \"research-blog\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

@@ -119,9 +119,13 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
             try {
                 // If using template, imagePrompt might be generic. AI should still handle it.
                 // Optionally, we could enhance the prompt by combining topic + template prompt.
-                const enhancedPrompt = templateId ? `${section.imagePrompt} related to ${topic}` : section.imagePrompt;
+                let enhancedPrompt = templateId ? `${section.imagePrompt} related to ${topic}` : section.imagePrompt;
+                enhancedPrompt += ". DO NOT include any text, typography, or words in the image.";
                 
-                const imageResult = await aiService.generateImage(enhancedPrompt);
+                const imageResult = await aiService.generateImage(enhancedPrompt, {
+                    aspectRatio: section.imageAspectRatio || '16:9'
+                });
+                
                 if (imageResult.success && imageResult.images.length > 0) {
                     const imgPart = imageResult.images[0];
                     let buffer, mimeType;
@@ -157,8 +161,15 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
     // 2.5 Generate Background Image
     let backgroundImageUrl = '';
     try {
-        const bgPrompt = templateId ? `A background image for an article about ${topic} based on a template` : `A high-quality background image for an article about ${topic}`;
-        const bgResult = await aiService.generateImage(bgPrompt);
+        const bgPrompt = templateId 
+            ? `A beautiful cover image for an article about ${topic} based on a template. Make it look like a high-quality cover image with NO TEXT or words.` 
+            : `A high-quality, professional cover image for an article about ${topic}. Ensure there is NO TEXT, typography, or words anywhere in the image.`;
+        
+        const bgResult = await aiService.generateImage(bgPrompt, {
+            aspectRatio: '16:9',
+            imageSize: '2K'
+        });
+        
         if (bgResult.success && bgResult.images.length > 0) {
             const imgPart = bgResult.images[0];
             let buffer, mimeType;

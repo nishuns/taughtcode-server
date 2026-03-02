@@ -128,6 +128,21 @@
     </style>
 </head>
 <body class="bg-[#0b0f19] text-slate-300 font-sans min-h-screen flex overflow-hidden">
+    <!-- Preloader -->
+    <div id="preloader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-8 transition-opacity duration-700">
+        <div class="w-12 h-12 bg-white rounded-full animate-pulse-custom"></div>
+        <div class="text-[10px] font-bold text-white uppercase tracking-[0.4em] opacity-30">Synchronizing Anthology</div>
+    </div>
+
+    <style>
+        @keyframes pulse-custom {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pulse-custom {
+            animation: pulse-custom 1s ease-in-out infinite;
+        }
+    </style>
 
     <!-- Mobile Header -->
     <div class="md:hidden fixed top-0 w-full z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center">
@@ -273,6 +288,13 @@
 
         // Run initialization
         init();
+
+        // Hide Preloader
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            preloader.style.opacity = '0';
+            setTimeout(() => preloader.style.display = 'none', 700);
+        });
 
         // Highlight active code blocks if any (optional enhancement)
         document.querySelectorAll('pre code').forEach((block) => {

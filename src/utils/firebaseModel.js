@@ -1,4 +1,5 @@
 import { db, admin } from '../config/firebase.js'
+import logger from '../utils/logger.js'
 
 class FirebaseModel {
     constructor(collectionName, schema) {
@@ -210,7 +211,7 @@ class FirebaseModel {
         } catch (error) {
             // Handle missing index error by fetching without sort and sorting in memory
             if (error.message.includes('FAILED_PRECONDITION') && error.message.includes('index') && options.sort) {
-                console.warn('Firestore missing index. Falling back to in-memory sort. Please create the index suggested in the error message.');
+                logger.warn(`Firestore missing index for collection "${this.collectionName}". Falling back to in-memory sort. Query: ${JSON.stringify(query)}`);
                 
                 // Fetch without the Firestore orderby
                 // We recreate the ref without the orderby parts. 

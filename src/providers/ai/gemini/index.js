@@ -41,25 +41,31 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
-     * Generate text from a single prompt
-     * @param {string} prompt - The prompt to generate text from
+     * Generate text/multimodal content from a prompt
+     * @param {string|object[]} prompt - The prompt (string or array of parts)
      * @param {object} options - Generation options
-     * @param {string} options.model - Model to use ('flash' or 'pro' or full model name)
+     * @param {string} options.model - Model to use
      * @param {number} options.temperature - Sampling temperature
      * @param {number} options.maxTokens - Maximum tokens to generate
-     * @param {boolean} options.useTools - Enable Google Search grounding (default: false)
-     * @param {string} options.responseMimeType - Response MIME type (e.g., 'application/json')
+     * @param {boolean} options.useTools - Enable Google Search grounding
+     * @param {string[]} options.responseModalities - ['TEXT', 'IMAGE'] etc.
+     * @param {string} options.aspectRatio - For image generation ('16:9', '1:1' etc.)
+     * @param {string} options.imageSize - For image generation ('2K', '4K' etc.)
+     * @param {string} options.responseMimeType - Response MIME type
      * @param {object} options.responseJsonSchema - JSON schema for structured output
-     * @returns {Promise<object>} - Generated text response with optional grounding metadata
+     * @returns {Promise<object>} - Generated response
      */
     async generateText(prompt, options = {}) {
         try {
             const model = this._getModelName(options.model);
             const useTools = options.useTools && this.toolsEnabled;
 
+            // Handle multimodal parts or simple string
+            const contents = Array.isArray(prompt) ? prompt : [{ text: prompt }];
+
             const config = {
                 model: model,
-                contents: prompt,
+                contents: [{ role: 'user', parts: contents }],
                 generationConfig: {
                     temperature: options.temperature || this.config.generationConfig.temperature,
                     maxOutputTokens: options.maxTokens || this.config.generationConfig.maxOutputTokens,
@@ -67,6 +73,21 @@ class GeminiAIProvider extends BaseAIProvider {
                     topK: options.topK || this.config.generationConfig.topK,
                 },
             };
+
+            // Add advanced configuration for multimodal outputs
+            if (options.responseModalities || options.aspectRatio || options.imageSize) {
+                config.config = config.config || {};
+                
+                if (options.responseModalities) {
+                    config.config.responseModalities = options.responseModalities;
+                }
+                
+                if (options.aspectRatio || options.imageSize) {
+                    config.config.imageConfig = {};
+                    if (options.aspectRatio) config.config.imageConfig.aspectRatio = options.aspectRatio;
+                    if (options.imageSize) config.config.imageConfig.imageSize = options.imageSize;
+                }
+            }
 
             // Add structured output configuration
             if (options.responseMimeType) {
@@ -87,10 +108,14 @@ class GeminiAIProvider extends BaseAIProvider {
 
             const response = await this.ai.models.generateContent(config);
 
-            // With grounding tool, results are automatically included in response
+            // Extract text and any generated images
+            const text = this._getText(response);
+            const images = this._extractImages(response);
+
             return {
                 success: true,
-                text: this._getText(response),
+                text: text,
+                images: images,
                 provider: "gemini",
                 model: model,
                 groundingMetadata: response.groundingMetadata || null,
@@ -102,23 +127,44 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
+     * Helper to extract images from response
+     * @private
+     */
+    _extractImages(response) {
+        const images = [];
+        if (response.candidates && response.candidates[0]?.content?.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    images.push({
+                        inlineData: part.inlineData
+                    });
+                }
+            }
+        }
+        return images;
+    }
+
+    /**
      * Chat with conversational context
      * @param {Array} messages - Array of message objects with role and content
      * @param {object} options - Generation options
      * @param {boolean} options.useTools - Enable Google Search grounding (default: false)
-     * @param {string} options.responseMimeType - Response MIME type (e.g., 'application/json')
+     * @param {string[]} options.responseModalities - ['TEXT', 'IMAGE']
+     * @param {string} options.aspectRatio - Aspect ratio for generated images
+     * @param {string} options.imageSize - Image size (e.g., '2K')
+     * @param {string} options.responseMimeType - Response MIME type
      * @param {object} options.responseJsonSchema - JSON schema for structured output
-     * @returns {Promise<object>} - Generated response message with optional grounding metadata
+     * @returns {Promise<object>} - Generated response message
      */
     async chat(messages, options = {}) {
         try {
             const model = this._getModelName(options.model);
             const useTools = options.useTools && this.toolsEnabled;
 
-            // Convert messages to Gemini format
+            // Convert messages to Gemini format, supporting both text and multimodal parts
             const contents = messages.map(msg => ({
                 role: msg.role === "assistant" ? "model" : "user",
-                parts: [{ text: msg.content }],
+                parts: Array.isArray(msg.content) ? msg.content : [{ text: msg.content }],
             }));
 
             const config = {
@@ -132,6 +178,21 @@ class GeminiAIProvider extends BaseAIProvider {
                 },
             };
 
+            // Add advanced configuration for multimodal outputs
+            if (options.responseModalities || options.aspectRatio || options.imageSize) {
+                config.config = config.config || {};
+                
+                if (options.responseModalities) {
+                    config.config.responseModalities = options.responseModalities;
+                }
+                
+                if (options.aspectRatio || options.imageSize) {
+                    config.config.imageConfig = {};
+                    if (options.aspectRatio) config.config.imageConfig.aspectRatio = options.aspectRatio;
+                    if (options.imageSize) config.config.imageConfig.imageSize = options.imageSize;
+                }
+            }
+
             // Add structured output configuration
             if (options.responseMimeType) {
                 config.config = config.config || {};
@@ -151,12 +212,15 @@ class GeminiAIProvider extends BaseAIProvider {
 
             const response = await this.ai.models.generateContent(config);
 
-            // With grounding tool, results are automatically included in response
+            const text = this._getText(response);
+            const images = this._extractImages(response);
+
             return {
                 success: true,
                 message: {
                     role: "assistant",
-                    content: this._getText(response),
+                    content: text,
+                    images: images,
                 },
                 provider: "gemini",
                 model: model,
@@ -209,10 +273,30 @@ class GeminiAIProvider extends BaseAIProvider {
     async generateImage(prompt, options = {}) {
         try {
             const model = this._getModelName(options.model || "image");
-            const response = await this.ai.models.generateContent({
+            
+            // Set up config for image generation
+            const config = {
                 model: model,
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            });
+            };
+            
+            // Add image specific configuration if provided
+            if (options.aspectRatio || options.imageSize) {
+                config.config = {
+                    responseModalities: ['TEXT', 'IMAGE'],
+                    imageConfig: {}
+                };
+                
+                if (options.aspectRatio) {
+                    config.config.imageConfig.aspectRatio = options.aspectRatio;
+                }
+                
+                if (options.imageSize) {
+                    config.config.imageConfig.imageSize = options.imageSize;
+                }
+            }
+            
+            const response = await this.ai.models.generateContent(config);
 
             const images = [];
             // Check if candidates and content exist
