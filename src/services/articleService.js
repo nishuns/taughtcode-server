@@ -166,7 +166,8 @@ async function generateArticleContent(authorId, topic, depth = 'standard', instr
             : `A high-quality, professional cover image for an article about ${topic}. Ensure there is NO TEXT, typography, or words anywhere in the image.`;
         
         const bgResult = await aiService.generateImage(bgPrompt, {
-            aspectRatio: '16:9'
+            aspectRatio: '16:9',
+            imageSize: '2K'
         });
         
         if (bgResult.success && bgResult.images.length > 0) {
