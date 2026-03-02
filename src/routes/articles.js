@@ -48,6 +48,18 @@ router.post('/templates/generate',
 
 /**
  * @swagger
+ * /articles/templates/config:
+ *   get:
+ *     summary: Get template configurations and categories
+ *     tags: [Articles]
+ *     responses:
+ *       200:
+ *         description: Template configuration data
+ */
+router.get('/templates/config', templateController.getTemplateConfig);
+
+/**
+ * @swagger
  * /articles/templates:
  *   get:
  *     summary: List all article templates

@@ -1,4 +1,19 @@
 import * as templateService from '../services/articleTemplateService.js';
+import { TEMPLATE_CONFIG } from '../config/templateConfig.js';
+
+/**
+ * Get template configurations
+ */
+const getTemplateConfig = async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            data: TEMPLATE_CONFIG
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
 
 /**
  * Generate a template using AI
@@ -58,6 +73,7 @@ const getTemplateBySlug = async (req, res) => {
 };
 
 export {
+    getTemplateConfig,
     generateTemplate,
     listTemplates,
     getTemplateBySlug
