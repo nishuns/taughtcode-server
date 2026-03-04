@@ -233,6 +233,54 @@ class GeminiAIProvider extends BaseAIProvider {
     }
 
     /**
+     * Chat with conversational context (streaming)
+     * @param {Array} messages - Array of message objects with role and content
+     * @param {object} options - Generation options
+     * @returns {AsyncGenerator} - Async generator yielding text chunks
+     */
+    async *chatStream(messages, options = {}) {
+        try {
+            const model = this._getModelName(options.model);
+            const useTools = options.useTools && this.toolsEnabled;
+
+            // Convert messages to Gemini format
+            const contents = messages.map(msg => ({
+                role: msg.role === "assistant" ? "model" : "user",
+                parts: Array.isArray(msg.content) ? msg.content : [{ text: msg.content }],
+            }));
+
+            const config = {
+                model: model,
+                contents: contents,
+                generationConfig: {
+                    temperature: options.temperature || this.config.generationConfig.temperature,
+                    maxOutputTokens: options.maxTokens || this.config.generationConfig.maxOutputTokens,
+                    topP: options.topP || this.config.generationConfig.topP,
+                    topK: options.topK || this.config.generationConfig.topK,
+                },
+            };
+
+            // Add tools if enabled
+            if (useTools || options.tools) {
+                config.config = config.config || {};
+                config.config.tools = this._getToolsConfig(options.tools, useTools);
+            }
+
+            const responseStream = await this.ai.models.generateContentStream(config);
+
+            for await (const chunk of responseStream) {
+                yield {
+                    success: true,
+                    text: this._getText(chunk),
+                    chunk: chunk
+                };
+            }
+        } catch (error) {
+            throw new Error(`Gemini Streaming API Error: ${error.message}`);
+        }
+    }
+
+    /**
      * Get tools configuration for Gemini
      * @private
      * @param {object[]} customTools - Custom function declarations

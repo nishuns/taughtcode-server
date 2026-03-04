@@ -20,6 +20,17 @@ async function chat(messages, options = {}) {
     }
 }
 
+async function* chatStream(messages, options = {}) {
+    try {
+        const stream = await ai.chatStream(messages, options);
+        for await (const chunk of stream) {
+            yield chunk;
+        }
+    } catch (error) {
+        throw new Error(`AI Service Error: ${error.message}`);
+    }
+}
+
 async function generateImage(prompt, options = {}) {
     try {
         return await ai.generateImage(prompt, options);
@@ -28,4 +39,4 @@ async function generateImage(prompt, options = {}) {
     }
 }
 
-export { generateText, chat, generateImage };
+export { generateText, chat, chatStream, generateImage };
