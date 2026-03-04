@@ -89,15 +89,11 @@ class ConversationController {
 
             for await (const chunk of stream) {
                 // Send data chunk to the client
-                res.write(`data: ${JSON.stringify({ text: chunk })}
-
-`);
+                res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
             }
 
             // Signal end of stream
-            res.write('data: [DONE]
-
-');
+            res.write('data: [DONE]\n\n');
             res.end();
 
         } catch (error) {
@@ -110,10 +106,7 @@ class ConversationController {
                 });
             } else {
                 // Otherwise write an error event and end
-                res.write(`event: error
-data: ${JSON.stringify({ message: error.message })}
-
-`);
+                res.write(`event: error\ndata: ${JSON.stringify({ message: error.message })}\n\n`);
                 res.end();
             }
         }
