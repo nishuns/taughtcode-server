@@ -16,9 +16,7 @@ class ConversationService {
         const threadData = {
             userId,
             title: title || 'New Conversation',
-            messages: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            messages: []
         };
 
         if (initialMessage) {
@@ -29,8 +27,8 @@ class ConversationService {
             });
         }
 
-        const id = await Conversation.create(threadData);
-        return { id, ...threadData };
+        // FirebaseModel.create returns { id, ...data }
+        return await Conversation.create(threadData);
     }
 
     /**
@@ -39,7 +37,7 @@ class ConversationService {
      * @returns {Promise<object>}
      */
     async getThread(threadId) {
-        const thread = await Conversation.getById(threadId);
+        const thread = await Conversation.findById(threadId);
         if (!thread) {
             throw new Error('Conversation not found');
         }
@@ -63,21 +61,13 @@ class ConversationService {
      * @returns {Promise<object>}
      */
     async addMessageToThread(threadId, role, content) {
-        const thread = await this.getThread(threadId);
-        
         const newMessage = {
             role,
             content,
             timestamp: new Date().toISOString()
         };
 
-        const updatedMessages = [...(thread.messages || []), newMessage];
-
-        await Conversation.update(threadId, {
-            messages: updatedMessages,
-            updatedAt: new Date()
-        });
-
+        await Conversation.addMessage(threadId, newMessage);
         return newMessage;
     }
 
@@ -88,12 +78,10 @@ class ConversationService {
      * @returns {AsyncGenerator}
      */
     async *streamReply(threadId, userMessage) {
-        // 1. Fetch thread and add user message
-        const thread = await this.getThread(threadId);
+        // 1. Add user message to the thread
         await this.addMessageToThread(threadId, 'user', userMessage);
 
-        // 2. Prepare the context for the AI
-        // We include the existing messages + the new user message we just added
+        // 2. Prepare the context for the AI (all previous messages + the one just added)
         const updatedThread = await this.getThread(threadId);
         const messagesForAI = updatedThread.messages.map(msg => ({
             role: msg.role,
@@ -101,11 +89,9 @@ class ConversationService {
         }));
 
         // 3. Request the stream from AI Service
-        const stream = aiService.chatStream(messagesForAI, {
-            // Optional: configure model or tokens here if needed
-        });
+        const stream = aiService.chatStream(messagesForAI);
 
-        // 4. Yield chunks back to the controller, aggregating the full response
+        // 4. Yield chunks and aggregate full response
         let fullResponse = '';
         for await (const chunk of stream) {
             if (chunk && chunk.text) {
@@ -114,7 +100,7 @@ class ConversationService {
             }
         }
 
-        // 5. After the stream is complete, save the assistant's response to the thread
+        // 5. Save the complete AI response
         if (fullResponse) {
             await this.addMessageToThread(threadId, 'assistant', fullResponse);
         }
@@ -125,7 +111,7 @@ class ConversationService {
      * @param {string} threadId 
      */
     async deleteThread(threadId) {
-        return await Conversation.delete(threadId);
+        return await Conversation.findByIdAndDelete(threadId);
     }
 }
 

@@ -1,38 +1,62 @@
 import FirebaseModel from '../utils/firebaseModel.js';
 
-class ConversationModel extends FirebaseModel {
-    constructor() {
-        super('conversations');
+/**
+ * Conversation Schema Definition
+ */
+const conversationSchema = {
+    userId: {
+        type: String,
+        required: true
+    },
+    title: {
+        type: String,
+        trim: true,
+        maxlength: 200,
+        default: 'New Conversation'
+    },
+    messages: {
+        type: Array, // Array of { role, content, timestamp }
+        default: []
+    },
+    createdAt: {
+        type: Date,
+        default: () => new Date()
+    },
+    updatedAt: {
+        type: Date,
+        default: () => new Date()
     }
+};
 
-    /**
-     * Optional: Validate conversation data before save/update
-     * @param {object} data
-     */
-    validate(data) {
-        if (!data.userId) {
-            throw new Error('userId is required for conversations');
-        }
-        return true;
-    }
+const Conversation = new FirebaseModel('conversations', conversationSchema);
 
-    /**
-     * Retrieves all conversations for a specific user
-     * @param {string} userId
-     * @returns {Promise<Array>}
-     */
-    async getByUserId(userId) {
-        try {
-            const querySnapshot = await this.collection.where('userId', '==', userId).orderBy('updatedAt', 'desc').get();
-            const docs = [];
-            querySnapshot.forEach(doc => {
-                docs.push({ id: doc.id, ...doc.data() });
-            });
-            return docs;
-        } catch (error) {
-            throw new Error(`Error getting conversations for user: ${error.message}`);
-        }
-    }
-}
+/**
+ * Custom Method: Retrieves all conversations for a specific user
+ * @param {string} userId
+ * @returns {Promise<Array>}
+ */
+Conversation.getByUserId = async function(userId) {
+    return this.find({ userId }, { sort: { updatedAt: 'desc' } });
+};
 
-export default new ConversationModel();
+/**
+ * Custom Method: Add a message to a thread
+ * @param {string} threadId
+ * @param {object} message { role, content, timestamp }
+ */
+Conversation.addMessage = async function(threadId, message) {
+    const thread = await this.findById(threadId);
+    if (!thread) throw new Error('Conversation not found');
+
+    const updatedMessages = [...(thread.messages || []), {
+        ...message,
+        timestamp: message.timestamp || new Date().toISOString()
+    }];
+
+    return this.findByIdAndUpdate(threadId, {
+        messages: updatedMessages,
+        updatedAt: new Date()
+    }, { new: true });
+};
+
+export default Conversation;
