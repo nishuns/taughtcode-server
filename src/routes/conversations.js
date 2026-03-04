@@ -23,6 +23,9 @@ router.get('/', conversationController.getUserThreads);
 // Get a specific thread by ID
 router.get('/:threadId', conversationController.getThread);
 
+// Update a thread's metadata (title, pinned status)
+router.patch('/:threadId', conversationController.updateThread);
+
 // Stream a reply in an existing thread
 router.post('/:threadId/stream', conversationController.streamReply);
 

@@ -14,6 +14,10 @@ const conversationSchema = {
         maxlength: 200,
         default: 'New Conversation'
     },
+    isPinned: {
+        type: Boolean,
+        default: false
+    },
     messages: {
         type: Array, // Array of { role, content, timestamp }
         default: []

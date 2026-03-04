@@ -65,6 +65,28 @@ class ConversationController {
     }
 
     /**
+     * Update thread metadata
+     */
+    async updateThread(req, res) {
+        try {
+            const { threadId } = req.params;
+            const { title, isPinned } = req.body;
+            
+            const updatedThread = await conversationService.updateThread(threadId, { title, isPinned });
+            
+            res.status(200).json({
+                success: true,
+                data: updatedThread
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    /**
      * Stream reply from AI for a given thread
      * Endpoint: POST /api/v1/conversations/:threadId/stream
      */
@@ -88,8 +110,10 @@ class ConversationController {
             const stream = conversationService.streamReply(threadId, message);
 
             for await (const chunk of stream) {
+                console.log(chunk)
                 // Send data chunk to the client
                 res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+                
             }
 
             // Signal end of stream

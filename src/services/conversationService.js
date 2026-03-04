@@ -45,6 +45,29 @@ class ConversationService {
     }
 
     /**
+     * Update thread metadata (title, pinned status)
+     * @param {string} threadId 
+     * @param {object} updates 
+     * @returns {Promise<object>}
+     */
+    async updateThread(threadId, updates) {
+        const allowedUpdates = ['title', 'isPinned'];
+        const filteredUpdates = {};
+        
+        allowedUpdates.forEach(key => {
+            if (updates[key] !== undefined) {
+                filteredUpdates[key] = updates[key];
+            }
+        });
+
+        if (Object.keys(filteredUpdates).length === 0) {
+            throw new Error('No valid update fields provided');
+        }
+
+        return await Conversation.findByIdAndUpdate(threadId, filteredUpdates, { new: true });
+    }
+
+    /**
      * Get all conversations for a user
      * @param {string} userId 
      * @returns {Promise<Array>}
