@@ -107,7 +107,8 @@ class ConversationController {
             res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
 
-            const stream = conversationService.streamReply(threadId, message);
+            const userId = req.user?.uid || 'anonymous';
+            const stream = conversationService.streamReply(userId, threadId, message);
 
             for await (const chunk of stream) {
                 console.log(chunk)

@@ -272,6 +272,7 @@ class GeminiAIProvider extends BaseAIProvider {
                 yield {
                     success: true,
                     text: this._getText(chunk),
+                    functionCalls: this._getFunctionCalls(chunk),
                     chunk: chunk
                 };
             }
