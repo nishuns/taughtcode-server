@@ -1,5 +1,7 @@
 import { Conversation } from '../models/index.js';
 import * as aiService from './aiService.js';
+import { uploadUserAsset } from './storageService.js';
+import { imageGeneratorToolSchema } from '../tools/imageGenerator.js';
 
 /**
  * Service for handling AI conversation threads
@@ -96,11 +98,12 @@ class ConversationService {
 
     /**
      * Get the stream for a new message, saving the history
+     * @param {string} userId
      * @param {string} threadId 
      * @param {string} userMessage 
      * @returns {AsyncGenerator}
      */
-    async *streamReply(threadId, userMessage) {
+    async *streamReply(userId, threadId, userMessage) {
         // 1. Add user message to the thread
         await this.addMessageToThread(threadId, 'user', userMessage);
 
@@ -112,7 +115,9 @@ class ConversationService {
         }));
 
         // 3. Request the stream from AI Service
-        const stream = aiService.chatStream(messagesForAI);
+        const stream = aiService.chatStream(messagesForAI, {
+            tools: [{ functionDeclarations: [imageGeneratorToolSchema] }]
+        });
 
         // 4. Yield chunks and aggregate full response
         let fullResponse = '';
@@ -120,6 +125,45 @@ class ConversationService {
             if (chunk && chunk.text) {
                 fullResponse += chunk.text;
                 yield chunk.text;
+            }
+
+            // Handle function calls
+            if (chunk && chunk.functionCalls && chunk.functionCalls.length > 0) {
+                for (const call of chunk.functionCalls) {
+                    if (call.name === 'generate_image') {
+                        const args = call.args || {};
+                        const prompt = args.prompt;
+                        
+                        yield '\n\n*Generating image...*\n\n';
+                        
+                        try {
+                            const imageResult = await aiService.generateImage(prompt);
+                            
+                            if (imageResult && imageResult.images && imageResult.images.length > 0) {
+                                // Assume first image
+                                const inlineData = imageResult.images[0].inlineData;
+                                const buffer = Buffer.from(inlineData.data, 'base64');
+                                const mimeType = inlineData.mimeType;
+                                
+                                const filename = `${threadId}_${Date.now()}.png`;
+                                const uploadResult = await uploadUserAsset(userId, buffer, mimeType, 'threads', filename);
+                                
+                                const markdownImage = `\n\n![Generated Image](${uploadResult.publicUrl})\n\n`;
+                                fullResponse += markdownImage;
+                                yield markdownImage;
+                            } else {
+                                const errorMsg = '\n\n*Failed to generate image.*\n\n';
+                                fullResponse += errorMsg;
+                                yield errorMsg;
+                            }
+                        } catch (error) {
+                            console.error('Image generation error:', error);
+                            const errorMsg = `\n\n*Failed to generate image: ${error.message}*\n\n`;
+                            fullResponse += errorMsg;
+                            yield errorMsg;
+                        }
+                    }
+                }
             }
         }
 
