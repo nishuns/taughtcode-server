@@ -145,10 +145,10 @@ class ConversationService {
                                 const buffer = Buffer.from(inlineData.data, 'base64');
                                 const mimeType = inlineData.mimeType;
                                 
-                                const filename = `${threadId}_${Date.now()}.png`;
-                                const uploadResult = await uploadUserAsset(userId, buffer, mimeType, 'threads', filename);
+                                const filename = `${Date.now()}.png`;
+                                const uploadResult = await uploadUserAsset(userId, buffer, mimeType, `threads/${threadId}/images`, filename);
                                 
-                                const markdownImage = `\n\n![Generated Image](${uploadResult.publicUrl})\n\n`;
+                                const markdownImage = `\n\n![Generated Image](${uploadResult.url})\n\n`;
                                 fullResponse += markdownImage;
                                 yield markdownImage;
                             } else {
