@@ -29,7 +29,12 @@ class BookController {
     async getUserBooks(req, res) {
         try {
             const userId = req.user.uid;
-            const books = await bookService.getUserBooks(userId);
+            const { full } = req.query;
+            let books = await bookService.getUserBooks(userId);
+
+            if (full === 'true') {
+                books = await Promise.all(books.map(book => bookService.getFullBookContents(book.id)));
+            }
             
             res.status(200).json({
                 success: true,

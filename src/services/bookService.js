@@ -151,12 +151,20 @@ class BookService {
         const pages = await Page.find({ bookId });
         const pageMap = new Map(pages.map(p => [p.id, p]));
 
+        // Populate chapters with full page objects
+        const populatedChapters = (book.chapters || []).map(chapter => ({
+            ...chapter,
+            pages: (chapter.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p)
+        }));
+
+        // Handle root level pageIds if they exist (for flat books or legacy data)
+        const populatedRootPages = (book.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p);
+
         return {
             ...book,
-            chapters: book.chapters.map(chapter => ({
-                ...chapter,
-                pages: chapter.pageIds.map(id => pageMap.get(id)).filter(p => !!p)
-            }))
+            chapters: populatedChapters,
+            pages: populatedRootPages, // Top level pages
+            allPages: pages // All pages associated with this book
         };
     }
 
