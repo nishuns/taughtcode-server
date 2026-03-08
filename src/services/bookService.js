@@ -73,15 +73,24 @@ class BookService {
     }
 
     /**
-     * Get all books for a specific user
+     * Get all pages for a specific user
      */
     async getUserBooks(userId) {
         return await Book.getByUserId(userId);
     }
 
     /**
+     * Get all pages for a specific book
+     * @param {string} bookId 
+     */
+    async getBookPages(bookId) {
+        return await Page.getByBookId(bookId);
+    }
+
+    /**
      * Update book metadata
      */
+
     async updateBook(bookId, updates) {
         const allowedUpdates = ['title', 'description', 'status', 'coverImage', 'metadata', 'type'];
         const filteredUpdates = {};
