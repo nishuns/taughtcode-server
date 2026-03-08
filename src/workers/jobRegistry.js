@@ -1,5 +1,6 @@
 import * as articleService from '../services/articleService.js';
 import * as templateService from '../services/articleTemplateService.js';
+import * as bookPageGenerationService from '../services/bookPageGenerationService.js';
 
 // Map Job Types to Service Functions
 export const JOB_REGISTRY = {
@@ -8,6 +9,9 @@ export const JOB_REGISTRY = {
     },
     'template-generation': async (userId, data) => {
         return templateService.generateTemplate(userId, data.description, data.category);
+    },
+    'book-page-generation': async (userId, data) => {
+        return bookPageGenerationService.generateBookPage(userId, data.bookId, data.threadId, data.topic);
     }
 };
 

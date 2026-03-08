@@ -1,6 +1,7 @@
 import { Conversation } from '../models/index.js';
 import * as aiService from './aiService.js';
 import { uploadUserAsset } from './storageService.js';
+import { addJob } from './jobService.js';
 import bookService from './bookService.js';
 import { imageGeneratorToolSchema } from '../tools/imageGenerator.js';
 import { 
@@ -191,9 +192,18 @@ class ConversationService {
 
                         try {
                             if (call.name === 'draft_book_page') {
-                                yield `\n\n*Drafting page: **${args.title}**...*\n\n`;
-                                const page = await bookService.createPage(updatedThread.bookId, args.title, args.content);
-                                const successMsg = `\n\n*Successfully added page: **${args.title}** (ID: ${page.id}) to your book.*\n\n`;
+                                yield `\n\n*Initiating background generation for page: **${args.title}**...*\n\n`;
+                                
+                                const jobData = {
+                                    bookId: updatedThread.bookId,
+                                    threadId: threadId,
+                                    topic: args.brief,
+                                    title: args.title
+                                };
+
+                                const job = await addJob('book-page-generation', jobData, userId);
+                                
+                                const successMsg = `\n\n*Background job started (ID: ${job.id}). You will be notified when the page is complete and added to your book.*\n\n`;
                                 yield successMsg;
                                 fullResponse += successMsg;
                             }

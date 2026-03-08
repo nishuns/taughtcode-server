@@ -79,9 +79,10 @@ class BookService {
      * @param {string} title 
      * @param {string} content 
      * @param {string} [messageId] - Optional AI message ID context
+     * @param {Array} [images] - Optional array of image URLs
      * @returns {Promise<object>}
      */
-    async createPage(bookId, title, content, messageId = null) {
+    async createPage(bookId, title, content, messageId = null, images = []) {
         // 1. Verify book exists
         const book = await this.getBook(bookId);
 
@@ -90,6 +91,7 @@ class BookService {
             bookId,
             title,
             content,
+            images,
             lastDraftedFromMessageId: messageId,
             status: 'draft'
         };

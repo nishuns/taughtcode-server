@@ -11,12 +11,12 @@ export const draftBookPageToolSchema = {
                 type: "STRING", 
                 description: "A fitting, descriptive title for the page or chapter." 
             },
-            content: { 
+            brief: { 
                 type: "STRING", 
-                description: "The highly detailed, comprehensive markdown content synthesized from the conversation." 
+                description: "A short brief or topic describing what this page should cover based on the conversation. The background worker will use this to generate the full content." 
             }
         },
-        required: ["title", "content"]
+        required: ["title", "brief"]
     }
 };
 
