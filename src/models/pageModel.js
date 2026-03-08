@@ -8,11 +8,9 @@ const pageSchema = {
         type: String,
         required: true
     },
-    title: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 200
+    chapterId: {
+        type: String, // Reference to the chapter within the book's chapters array
+        required: true
     },
     content: {
         type: String, // Markdown/HTML content

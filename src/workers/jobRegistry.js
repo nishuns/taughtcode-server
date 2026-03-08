@@ -11,7 +11,7 @@ export const JOB_REGISTRY = {
         return templateService.generateTemplate(userId, data.description, data.category);
     },
     'book-page-generation': async (userId, data) => {
-        return bookPageGenerationService.generateBookPage(userId, data.bookId, data.threadId, data.topic);
+        return bookPageGenerationService.generateBookPage(userId, data.bookId, data.chapterId, data.threadId, data.topic);
     }
 };
 

@@ -9,11 +9,12 @@ import { generatePageStructurePrompt, generatePageContentPrompt } from '../promp
  * Generate a book page in the background
  * @param {string} userId
  * @param {string} bookId
+ * @param {string} chapterId
  * @param {string} threadId
  * @param {string} topic
  */
-async function generateBookPage(userId, bookId, threadId, topic) {
-    logger.info(`BookPageGenerationService: Generating page for book ${bookId} on topic "${topic}"`);
+async function generateBookPage(userId, bookId, chapterId, threadId, topic) {
+    logger.info(`BookPageGenerationService: Generating page for book ${bookId}, chapter ${chapterId} on topic "${topic}"`);
 
     // 1. Fetch Conversation History
     const thread = await Conversation.findById(threadId);
@@ -87,8 +88,8 @@ async function generateBookPage(userId, bookId, threadId, topic) {
     );
     const content = contentResult.text;
 
-    // 5. Save Page to Book
-    const page = await bookService.createPage(bookId, structure.title, content, null, imagesAttached);
+    // 5. Save Page to Chapter
+    const page = await bookService.createPage(bookId, chapterId, content, null, imagesAttached);
     
     logger.info(`BookPageGenerationService: Page generated successfully (ID: ${page.id})`);
     return page;

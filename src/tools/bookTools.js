@@ -1,22 +1,40 @@
 /**
- * Tool Schema for drafting a new book page
+ * Tool Schema for drafting a new book page into a specific chapter.
  */
-export const draftBookPageToolSchema = {
-    name: "draft_book_page",
-    description: "Drafts a new page or chapter for the attached book based on the current conversational context. Use this when the user wants to solidify part of the conversation into their book.",
+export const draftChapterPageToolSchema = {
+    name: "draft_chapter_page",
+    description: "Drafts a new page for the attached book. Use ONLY when the user explicitly requests to 'draft', 'write', or 'solidify' the brainstorming into the book.",
+    parameters: {
+        type: "OBJECT",
+        properties: {
+            chapterId: {
+                type: "STRING",
+                description: "The ID of the chapter to add this page to. If the book is a 'paper' or has only one chapter, this can be omitted."
+            },
+            brief: { 
+                type: "STRING", 
+                description: "A short brief or topic describing what this page should cover based on the brainstorming conversation." 
+            }
+        },
+        required: ["brief"]
+    }
+};
+
+/**
+ * Tool Schema for creating a new named chapter in the book.
+ */
+export const createChapterToolSchema = {
+    name: "create_chapter",
+    description: "Creates a new named chapter in the book. Use this when the user wants to start a new section or chapter.",
     parameters: {
         type: "OBJECT",
         properties: {
             title: { 
                 type: "STRING", 
-                description: "A fitting, descriptive title for the page or chapter." 
-            },
-            brief: { 
-                type: "STRING", 
-                description: "A short brief or topic describing what this page should cover based on the conversation. The background worker will use this to generate the full content." 
+                description: "The title of the new chapter." 
             }
         },
-        required: ["title", "brief"]
+        required: ["title"]
     }
 };
 
@@ -25,7 +43,7 @@ export const draftBookPageToolSchema = {
  */
 export const updateBookPageToolSchema = {
     name: "update_book_page",
-    description: "Updates the content or title of an existing page in the book. Use this when the user asks to refine, expand, or correct a previously drafted page.",
+    description: "Updates the content of an existing page. Use this when the user asks to refine, expand, or correct a previously drafted page.",
     parameters: {
         type: "OBJECT",
         properties: {
@@ -33,16 +51,12 @@ export const updateBookPageToolSchema = {
                 type: "STRING",
                 description: "The ID of the page to update."
             },
-            title: { 
-                type: "STRING", 
-                description: "The new title for the page (optional)." 
-            },
             content: { 
                 type: "STRING", 
-                description: "The updated markdown content for the page (optional)." 
+                description: "The updated markdown content for the page." 
             }
         },
-        required: ["pageId"]
+        required: ["pageId", "content"]
     }
 };
 

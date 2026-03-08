@@ -1,35 +1,64 @@
 import { Book, Page, Conversation } from '../models/index.js';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Service for handling Threaded Books and their Chapters/Pages
+ * Service for handling Threaded Books, Chapters, and Pages
  */
 class BookService {
     /**
-     * Create a new Book
+     * Create a new Book or Paper
      * @param {string} userId 
      * @param {string} title 
      * @param {string} description 
-     * @param {string} [threadId] - Optional thread to link this book to
+     * @param {string} [type] - 'book' or 'paper'
+     * @param {string} [threadId] - Optional thread to link
      * @returns {Promise<object>}
      */
-    async createBook(userId, title, description, threadId = null) {
+    async createBook(userId, title, description, type = 'book', threadId = null) {
         const bookData = {
             userId,
-            title: title || 'Untitled Book',
+            title: title || 'Untitled',
             description: description || '',
+            type: type || 'book',
             threadId,
-            pageIds: [],
+            chapters: [],
             status: 'draft'
         };
 
+        // For 'paper', initialize with one nameless chapter
+        if (bookData.type === 'paper') {
+            bookData.chapters.push({
+                id: uuidv4(),
+                title: null,
+                pageIds: []
+            });
+        }
+
         const book = await Book.create(bookData);
 
-        // If threadId is provided, link the conversation to this book
         if (threadId) {
             await Conversation.findByIdAndUpdate(threadId, { bookId: book.id });
         }
 
         return book;
+    }
+
+    /**
+     * Add a named chapter to a book
+     * @param {string} bookId 
+     * @param {string} title 
+     */
+    async addChapter(bookId, title) {
+        const book = await this.getBook(bookId);
+        
+        const newChapter = {
+            id: uuidv4(),
+            title: title || 'New Chapter',
+            pageIds: []
+        };
+
+        const updatedChapters = [...(book.chapters || []), newChapter];
+        return await Book.findByIdAndUpdate(bookId, { chapters: updatedChapters }, { new: true });
     }
 
     /**
@@ -39,16 +68,12 @@ class BookService {
      */
     async getBook(bookId) {
         const book = await Book.findById(bookId);
-        if (!book) {
-            throw new Error('Book not found');
-        }
+        if (!book) throw new Error('Book not found');
         return book;
     }
 
     /**
      * Get all books for a specific user
-     * @param {string} userId 
-     * @returns {Promise<Array>}
      */
     async getUserBooks(userId) {
         return await Book.getByUserId(userId);
@@ -56,40 +81,41 @@ class BookService {
 
     /**
      * Update book metadata
-     * @param {string} bookId 
-     * @param {object} updates 
-     * @returns {Promise<object>}
      */
     async updateBook(bookId, updates) {
-        const allowedUpdates = ['title', 'description', 'status', 'coverImage', 'metadata'];
+        const allowedUpdates = ['title', 'description', 'status', 'coverImage', 'metadata', 'type'];
         const filteredUpdates = {};
-
         allowedUpdates.forEach(key => {
-            if (updates[key] !== undefined) {
-                filteredUpdates[key] = updates[key];
-            }
+            if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
         });
-
         return await Book.findByIdAndUpdate(bookId, filteredUpdates, { new: true });
     }
 
     /**
-     * Create a new Page within a Book
+     * Create a new Page within a specific Chapter
      * @param {string} bookId 
-     * @param {string} title 
+     * @param {string} chapterId 
      * @param {string} content 
-     * @param {string} [messageId] - Optional AI message ID context
-     * @param {Array} [images] - Optional array of image URLs
+     * @param {string} [messageId]
+     * @param {Array} [images]
      * @returns {Promise<object>}
      */
-    async createPage(bookId, title, content, messageId = null, images = []) {
-        // 1. Verify book exists
+    async createPage(bookId, chapterId, content, messageId = null, images = []) {
         const book = await this.getBook(bookId);
+        
+        // Find the chapter
+        const chapterIndex = book.chapters.findIndex(c => c.id === chapterId);
+        if (chapterIndex === -1 && book.type !== 'paper') {
+             throw new Error('Chapter not found in book');
+        }
 
-        // 2. Create the page
+        // If paper and no chapterId provided, use the first one
+        const targetChapterId = (book.type === 'paper' && !chapterId) ? book.chapters[0].id : chapterId;
+        const targetChapterIndex = book.chapters.findIndex(c => c.id === targetChapterId);
+
         const pageData = {
             bookId,
-            title,
+            chapterId: targetChapterId,
             content,
             images,
             lastDraftedFromMessageId: messageId,
@@ -98,80 +124,72 @@ class BookService {
 
         const page = await Page.create(pageData);
 
-        // 3. Append to Book's pageIds array for ordering
-        const updatedPageIds = [...(book.pageIds || []), page.id];
-        await Book.findByIdAndUpdate(bookId, { pageIds: updatedPageIds });
+        // Update book chapters array
+        const updatedChapters = [...book.chapters];
+        updatedChapters[targetChapterIndex].pageIds.push(page.id);
+        
+        await Book.findByIdAndUpdate(bookId, { chapters: updatedChapters });
 
         return page;
     }
 
     /**
-     * Get all pages for a book in their explicit order
+     * Get the full hierarchy of a book (Chapters -> Pages)
      * @param {string} bookId 
-     * @returns {Promise<Array>}
      */
-    async getBookPages(bookId) {
+    async getFullBookContents(bookId) {
         const book = await this.getBook(bookId);
-        const pages = await Page.getByBookId(bookId);
-
-        // Sort pages based on the order in book.pageIds
+        const pages = await Page.find({ bookId });
         const pageMap = new Map(pages.map(p => [p.id, p]));
-        return (book.pageIds || [])
-            .map(id => pageMap.get(id))
-            .filter(p => !!p); // Filter out any dangling references
+
+        return {
+            ...book,
+            chapters: book.chapters.map(chapter => ({
+                ...chapter,
+                pages: chapter.pageIds.map(id => pageMap.get(id)).filter(p => !!p)
+            }))
+        };
     }
 
     /**
      * Update a specific page
-     * @param {string} pageId 
-     * @param {object} updates 
-     * @returns {Promise<object>}
      */
     async updatePage(pageId, updates) {
-        const allowedUpdates = ['title', 'content', 'status', 'images'];
+        const allowedUpdates = ['content', 'status', 'images'];
         const filteredUpdates = {};
-
         allowedUpdates.forEach(key => {
-            if (updates[key] !== undefined) {
-                filteredUpdates[key] = updates[key];
-            }
+            if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
         });
-
         return await Page.findByIdAndUpdate(pageId, filteredUpdates, { new: true });
     }
 
     /**
-     * Delete a page and remove its reference from the book
-     * @param {string} pageId 
+     * Delete a page and clean up references
      */
     async deletePage(pageId) {
         const page = await Page.findById(pageId);
         if (!page) return;
 
-        // 1. Delete the page document
         await Page.findByIdAndDelete(pageId);
 
-        // 2. Remove from book.pageIds
         const book = await Book.findById(page.bookId);
-        if (book && book.pageIds) {
-            const updatedPageIds = book.pageIds.filter(id => id !== pageId);
-            await Book.findByIdAndUpdate(page.bookId, { pageIds: updatedPageIds });
+        if (book && book.chapters) {
+            const updatedChapters = book.chapters.map(c => {
+                if (c.id === page.chapterId) {
+                    return { ...c, pageIds: c.pageIds.filter(id => id !== pageId) };
+                }
+                return c;
+            });
+            await Book.findByIdAndUpdate(page.bookId, { chapters: updatedChapters });
         }
     }
 
     /**
-     * Delete a book and all its pages
-     * @param {string} bookId 
+     * Delete a book and its pages
      */
     async deleteBook(bookId) {
-        const book = await this.getBook(bookId);
-        
-        // 1. Delete all pages
-        const pages = await Page.getByBookId(bookId);
-        const deletePromises = pages.map(p => Page.findByIdAndDelete(p.id));
-        await Promise.all(deletePromises);
-
-        // 2. Delete the book
+        const pages = await Page.find({ bookId });
+        await Promise.all(pages.map(p => Page.findByIdAndDelete(p.id)));
         return await Book.findByIdAndDelete(bookId);
     }
 }

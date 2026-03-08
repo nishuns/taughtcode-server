@@ -5,7 +5,8 @@ import { addJob } from './jobService.js';
 import bookService from './bookService.js';
 import { imageGeneratorToolSchema } from '../tools/imageGenerator.js';
 import { 
-    draftBookPageToolSchema, 
+    draftChapterPageToolSchema, 
+    createChapterToolSchema,
     updateBookPageToolSchema, 
     deleteBookPageToolSchema 
 } from '../tools/bookTools.js';
@@ -126,7 +127,8 @@ class ConversationService {
             tools: [{ 
                 functionDeclarations: [
                     imageGeneratorToolSchema,
-                    draftBookPageToolSchema,
+                    draftChapterPageToolSchema,
+                    createChapterToolSchema,
                     updateBookPageToolSchema,
                     deleteBookPageToolSchema
                 ] 
@@ -180,7 +182,7 @@ class ConversationService {
                     }
 
                     // --- Handle Threaded Book Tools ---
-                    if (['draft_book_page', 'update_book_page', 'delete_book_page'].includes(call.name)) {
+                    if (['draft_chapter_page', 'create_chapter', 'update_book_page', 'delete_book_page'].includes(call.name)) {
                         if (!updatedThread.bookId) {
                             const errorMsg = '\n\n*Error: This conversation is not linked to a book. Please create a book first.*\n\n';
                             yield errorMsg;
@@ -191,27 +193,50 @@ class ConversationService {
                         const args = call.args || {};
 
                         try {
-                            if (call.name === 'draft_book_page') {
-                                yield `\n\n*Initiating background generation for page: **${args.title}**...*\n\n`;
+                            if (call.name === 'create_chapter') {
+                                yield `\n\n*Creating chapter: **${args.title}**...*\n\n`;
+                                const book = await bookService.addChapter(updatedThread.bookId, args.title);
+                                const newChapter = book.chapters[book.chapters.length - 1];
+                                const successMsg = `\n\n*Successfully created chapter: **${args.title}** (ID: ${newChapter.id}).*\n\n`;
+                                yield successMsg;
+                                fullResponse += successMsg;
+                            }
+
+                            if (call.name === 'draft_chapter_page') {
+                                const book = await bookService.getBook(updatedThread.bookId);
+                                let targetChapterId = args.chapterId;
+
+                                // Auto-select chapter if not provided
+                                if (!targetChapterId) {
+                                    if (book.type === 'paper' || book.chapters.length === 1) {
+                                        targetChapterId = book.chapters[0].id;
+                                    } else if (book.chapters.length > 0) {
+                                        targetChapterId = book.chapters[book.chapters.length - 1].id;
+                                    } else {
+                                        throw new Error('No chapters found in book. Please create a chapter first.');
+                                    }
+                                }
+
+                                yield `\n\n*Initiating background generation for a new page...*\n\n`;
                                 
                                 const jobData = {
                                     bookId: updatedThread.bookId,
+                                    chapterId: targetChapterId,
                                     threadId: threadId,
-                                    topic: args.brief,
-                                    title: args.title
+                                    topic: args.brief
                                 };
 
                                 const job = await addJob('book-page-generation', jobData, userId);
                                 
-                                const successMsg = `\n\n*Background job started (ID: ${job.id}). You will be notified when the page is complete and added to your book.*\n\n`;
+                                const successMsg = `\n\n*Background job started (ID: ${job.id}). The page will be added to the book once complete.*\n\n`;
                                 yield successMsg;
                                 fullResponse += successMsg;
                             }
 
                             if (call.name === 'update_book_page') {
                                 yield `\n\n*Updating page ID: ${args.pageId}...*\n\n`;
-                                await bookService.updatePage(args.pageId, { title: args.title, content: args.content });
-                                const successMsg = `\n\n*Successfully updated page: **${args.title || args.pageId}**.*\n\n`;
+                                await bookService.updatePage(args.pageId, { content: args.content });
+                                const successMsg = `\n\n*Successfully updated page content.*\n\n`;
                                 yield successMsg;
                                 fullResponse += successMsg;
                             }
@@ -219,7 +244,7 @@ class ConversationService {
                             if (call.name === 'delete_book_page') {
                                 yield `\n\n*Deleting page ID: ${args.pageId}...*\n\n`;
                                 await bookService.deletePage(args.pageId);
-                                const successMsg = `\n\n*Successfully removed page from your book.*\n\n`;
+                                const successMsg = `\n\n*Successfully removed page from the book.*\n\n`;
                                 yield successMsg;
                                 fullResponse += successMsg;
                             }

@@ -34,8 +34,13 @@ const bookSchema = {
         enum: ['draft', 'published'],
         default: 'draft'
     },
-    pageIds: {
-        type: Array, // Array of Page IDs to maintain explicit ordering
+    type: {
+        type: String,
+        enum: ['book', 'paper'], // 'book' has named chapters, 'paper' has one nameless chapter
+        default: 'book'
+    },
+    chapters: {
+        type: Array, // Array of { id, title, pageIds: [] }
         default: []
     },
     metadata: {
