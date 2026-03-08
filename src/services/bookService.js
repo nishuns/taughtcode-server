@@ -148,23 +148,31 @@ class BookService {
      */
     async getFullBookContents(bookId) {
         const book = await this.getBook(bookId);
-        const pages = await Page.find({ bookId });
-        const pageMap = new Map(pages.map(p => [p.id, p]));
+        const allPagesInBook = await Page.find({ bookId });
+        const pageMap = new Map(allPagesInBook.map(p => [p.id, p]));
 
         // Populate chapters with full page objects
-        const populatedChapters = (book.chapters || []).map(chapter => ({
-            ...chapter,
-            pages: (chapter.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p)
-        }));
+        const populatedChapters = (book.chapters || []).map(chapter => {
+            const chapterPages = (chapter.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p);
+            // Return chapter without the raw pageIds, using 'pages' instead
+            const { pageIds, ...chapterData } = chapter;
+            return {
+                ...chapterData,
+                pages: chapterPages
+            };
+        });
 
-        // Handle root level pageIds if they exist (for flat books or legacy data)
-        const populatedRootPages = (book.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p);
+        // Resolve root level pages
+        const rootPages = (book.pageIds || []).map(id => pageMap.get(id)).filter(p => !!p);
+
+        // Remove raw pageIds from the root book object
+        const { pageIds, ...bookData } = book;
 
         return {
-            ...book,
+            ...bookData,
             chapters: populatedChapters,
-            pages: populatedRootPages, // Top level pages
-            allPages: pages // All pages associated with this book
+            pages: rootPages, // Root level pages
+            allPages: allPagesInBook // Reference for all pages
         };
     }
 
