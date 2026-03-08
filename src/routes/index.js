@@ -6,6 +6,7 @@ import organizationRoutes from './organizations.js';
 import clientAppRoutes from './clientApps.js';
 import integrationRoutes from './integrations.js';
 import conversationRoutes from './conversations.js';
+import bookRoutes from './books.js';
 
 const router = express.Router();
 
@@ -35,6 +36,9 @@ router.use('/integrations', integrationRoutes);
 
 // Conversation Routes
 router.use('/conversations', conversationRoutes);
+
+// Book Routes
+router.use('/books', bookRoutes);
 
 /**
  * @swagger

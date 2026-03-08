@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "a1b2c3d4-5678-90ef-ghij-klmnopqrst",
 		"name": "TaughtCode API",
-		"description": "API collection for TaughtCode server, including User Profile and Article management.",
+		"description": "API collection for TaughtCode server, including User Profile, Article, and Threaded Book management.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -189,218 +189,14 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Conversations",
+			"item": [
 				{
-					"name": "Deactivate User",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/:id/deactivate",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"users",
-								":id",
-								"deactivate"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "USER_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Disable User",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/:id/disable",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"users",
-								":id",
-								"disable"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "USER_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Activate User",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/:id/activate",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"users",
-								":id",
-								"activate"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "USER_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Integration",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"accessToken\": \"ghp_your_personal_access_token\",\n    \"owner\": \"your-github-username\",\n    \"repo\": \"your-repo-name\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/users/integrations/:provider",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"users",
-								"integrations",
-								":provider"
-							],
-							"variable": [
-								{
-									"key": "provider",
-									"value": "github"
-								}
-							]
-						}
-					                                        },
-					                                        "response": []
-					                                },
-					                                {
-					                                        "name": "Sync Integration",
-					                                        "request": {
-					                                                "method": "POST",
-					                                                "header": [
-					                                                        {
-					                                                                "key": "Authorization",
-					                                                                "value": "Bearer {{auth_token}}",
-					                                                                "type": "text"
-					                                                        }
-					                                                ],
-					                                                "body": {
-					                                                        "mode": "raw",
-					                                                        "raw": "{\n    \"path\": \"\"\n}",
-					                                                        "options": {
-					                                                                "raw": {
-					                                                                        "language": "json"
-					                                                                }
-					                                                        }
-					                                                },
-					                                                "url": {
-					                                                        "raw": "{{base_url}}/users/integrations/:provider/sync",
-					                                                        "host": [
-					                                                                "{{base_url}}"
-					                                                        ],
-					                                                        "path": [
-					                                                                "users",
-					                                                                "integrations",
-					                                                                ":provider",
-					                                                                "sync"
-					                                                        ],
-					                                                        "variable": [
-					                                                                {
-					                                                                        "key": "provider",
-					                                                                        "value": "github"
-					                                                                }
-					                                                        ]
-					                                                }
-					                                        },
-					                                        "response": []
-					                                },
-					                                {
-					                                        "name": "Remove Integration",
-					                                        "request": {
-					                                                "method": "DELETE",
-					                                                "header": [
-					                                                        {
-					                                                                "key": "Authorization",
-					                                                                "value": "Bearer {{auth_token}}",
-					                                                                "type": "text"
-					                                                        }
-					                                                ],
-					                                                "url": {
-					                                                        "raw": "{{base_url}}/users/integrations/:provider",
-					                                                        "host": [
-					                                                                "{{base_url}}"
-					                                                        ],
-					                                                        "path": [
-					                                                                "users",
-					                                                                "integrations",
-					                                                                ":provider"
-					                                                        ],
-					                                                        "variable": [
-					                                                                {
-					                                                                        "key": "provider",
-					                                                                        "value": "github"
-					                                                                }
-					                                                        ]
-					                                                }
-					                                        },
-					                                        "response": []
-					                                }
-					                        ]
-					                },
-					                {
-					                        "name": "Articles",			"item": [
-				{
-					"name": "Create Article",
+					"name": "Create Thread",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -412,7 +208,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\",\n    \"backgroundImage\": \"https://example.com/bg.png\"\n}",
+							"raw": "{\n    \"title\": \"Discussion about AI\",\n    \"initialMessage\": \"Hello, can you help me write a book?\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -420,98 +216,64 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/articles",
+							"raw": "{{base_url}}/conversations",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles"
+								"conversations"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Generate Article (AI)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\",\n    \"instructions\": \"Focus on scalability challenges\",\n    \"templateId\": \"OPTIONAL_TEMPLATE_ID\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/articles/generate",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles",
-								"generate"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List Articles",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/articles?status=published",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles"
-							],
-							"query": [
-								{
-									"key": "status",
-									"value": "published"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Article By Slug",
+					"name": "List My Threads",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{auth_token}}",
-								"type": "text",
-								"disabled": true
+								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/articles/:slug",
+							"raw": "{{base_url}}/conversations",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles",
-								":slug"
+								"conversations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Thread Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/conversations/:threadId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"conversations",
+								":threadId"
 							],
 							"variable": [
 								{
-									"key": "slug",
-									"value": "my-first-article"
+									"key": "threadId",
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -519,7 +281,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Article",
+					"name": "Update Thread (Title/Pin)",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -531,7 +293,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\": \"Updated description\",\n    \"backgroundImage\": \"https://example.com/updated_bg.png\"\n}",
+							"raw": "{\n    \"title\": \"Quantum Physics Deep Dive\",\n    \"isPinned\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -539,18 +301,18 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/articles/:id",
+							"raw": "{{base_url}}/conversations/:threadId",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles",
-								":id"
+								"conversations",
+								":threadId"
 							],
 							"variable": [
 								{
-									"key": "id",
-									"value": "ARTICLE_ID"
+									"key": "threadId",
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -558,7 +320,7 @@
 					"response": []
 				},
 				{
-					"name": "Publish Article",
+					"name": "Stream AI Reply",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -566,95 +328,16 @@
 								"key": "Authorization",
 								"value": "Bearer {{auth_token}}",
 								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/articles/:id/publish",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles",
-								":id",
-								"publish"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "ARTICLE_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Article",
-					"request": {
-						"method": "DELETE",
-						"header": [
+							},
 							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/articles/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "ARTICLE_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All Articles",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/articles",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Review",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
+								"key": "Accept",
+								"value": "text/event-stream",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great article!\"\n}",
+							"raw": "{\n    \"message\": \"Let's brainstorm about the origin of linguistics. Once we are ready, I'll ask you to draft a page.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -662,19 +345,19 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/articles/:id/reviews",
+							"raw": "{{base_url}}/conversations/:threadId/stream",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles",
-								":id",
-								"reviews"
+								"conversations",
+								":threadId",
+								"stream"
 							],
 							"variable": [
 								{
-									"key": "id",
-									"value": "ARTICLE_ID"
+									"key": "threadId",
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -684,10 +367,10 @@
 			]
 		},
 		{
-			"name": "Templates",
+			"name": "Books",
 			"item": [
 				{
-					"name": "Generate Template (AI)",
+					"name": "Create Book",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -699,7 +382,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\": \"A comprehensive research analysis on quantum computing\",\n    \"category\": \"research-blog\"\n}",
+							"raw": "{\n    \"title\": \"The Origins of Linguistics\",\n    \"description\": \"A collaborative study\",\n    \"type\": \"book\",\n    \"threadId\": \"{{THREAD_ID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -707,32 +390,137 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/articles/templates/generate",
+							"raw": "{{base_url}}/books",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles",
-								"templates",
-								"generate"
+								"books"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "List Templates",
+					"name": "Create Paper",
 					"request": {
-						"method": "GET",
-						"header": [],
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Quantum Scaling Research\",\n    \"description\": \"One flow paper\",\n    \"type\": \"paper\",\n    \"threadId\": \"{{THREAD_ID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{base_url}}/articles/templates",
+							"raw": "{{base_url}}/books",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"articles",
-								"templates"
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List My Books",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/books",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Full Book Hierarchy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/books/:bookId/pages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"books",
+								":bookId",
+								"pages"
+							],
+							"variable": [
+								{
+									"key": "bookId",
+									"value": "{{BOOK_ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Book Metadata",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Title\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/books/:bookId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"books",
+								":bookId"
+							],
+							"variable": [
+								{
+									"key": "bookId",
+									"value": "{{BOOK_ID}}"
+								}
 							]
 						}
 					},
@@ -766,8 +554,40 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "JOB_ID"
+									"value": "{{JOB_ID}}"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Queue Manual Job",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"article-generation\",\n    \"data\": {\n        \"topic\": \"The Future of AI\",\n        \"depth\": \"standard\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"jobs"
 							]
 						}
 					},
@@ -776,306 +596,25 @@
 			]
 		},
 		{
-			"name": "Organizations",
+			"name": "Articles",
 			"item": [
 				{
-					"name": "Create Organization",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"SSCorp\",\n    \"type\": \"enterprise\",\n    \"description\": \"Education technology company\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Organization",
+					"name": "List Articles",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
-							"raw": "{{base_url}}/organizations/:orgId",
+							"raw": "{{base_url}}/articles?status=published",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"organizations",
-								":orgId"
+								"articles"
 							],
-							"variable": [
+							"query": [
 								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Member",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"userId\": \"NEW_USER_ID\",\n    \"role\": \"moderator\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/members",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"members"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Member Role",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"role\": \"user\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/members/:userId/role",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"members",
-								":userId",
-								"role"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								},
-								{
-									"key": "userId",
-									"value": "USER_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Member",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/members/:userId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"members",
-								":userId"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								},
-								{
-									"key": "userId",
-									"value": "USER_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Client",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"url\": \"http://localhost:3000\",\n    \"whitelistedApis\": [\"/api/v1/articles\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/clients",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"clients"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Client",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"url\": \"http://localhost:3000\",\n    \"whitelistedApis\": [\"*\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/clients",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"clients"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Client",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"url\": \"http://localhost:3000\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/organizations/:orgId/clients",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"organizations",
-								":orgId",
-								"clients"
-							],
-							"variable": [
-								{
-									"key": "orgId",
-									"value": "ORG_ID"
+									"key": "status",
+									"value": "published"
 								}
 							]
 						}
@@ -1100,7 +639,6 @@
 					"",
 					"const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;",
 					"",
-					"// Check if token exists and is not expired (tokens typically last 1 hour)",
 					"if (currentToken && tokenExpiry && currentTime < tokenExpiry) {",
 					"    console.log(\"Using existing valid token\");",
 					"} else {",
@@ -1127,7 +665,6 @@
 					"            const jsonResponse = res.json();",
 					"            if (jsonResponse.idToken) {",
 					"                pm.environment.set(\"auth_token\", jsonResponse.idToken);",
-					"                // Set expiry to 55 minutes from now (token lasts 1 hour, refresh 5 min early)",
 					"                pm.environment.set(\"token_expiry\", currentTime + (55 * 60 * 1000));",
 					"                console.log(\"New token obtained and stored\");",
 					"            } else {",

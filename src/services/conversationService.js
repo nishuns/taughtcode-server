@@ -1,7 +1,15 @@
 import { Conversation } from '../models/index.js';
 import * as aiService from './aiService.js';
 import { uploadUserAsset } from './storageService.js';
+import { addJob } from './jobService.js';
+import bookService from './bookService.js';
 import { imageGeneratorToolSchema } from '../tools/imageGenerator.js';
+import { 
+    draftChapterPageToolSchema, 
+    createChapterToolSchema,
+    updateBookPageToolSchema, 
+    deleteBookPageToolSchema 
+} from '../tools/bookTools.js';
 
 /**
  * Service for handling AI conversation threads
@@ -116,7 +124,15 @@ class ConversationService {
 
         // 3. Request the stream from AI Service
         const stream = aiService.chatStream(messagesForAI, {
-            tools: [{ functionDeclarations: [imageGeneratorToolSchema] }]
+            tools: [{ 
+                functionDeclarations: [
+                    imageGeneratorToolSchema,
+                    draftChapterPageToolSchema,
+                    createChapterToolSchema,
+                    updateBookPageToolSchema,
+                    deleteBookPageToolSchema
+                ] 
+            }]
         });
 
         // 4. Yield chunks and aggregate full response
@@ -130,6 +146,7 @@ class ConversationService {
             // Handle function calls
             if (chunk && chunk.functionCalls && chunk.functionCalls.length > 0) {
                 for (const call of chunk.functionCalls) {
+                    // --- Handle Image Generation ---
                     if (call.name === 'generate_image') {
                         const args = call.args || {};
                         const prompt = args.prompt;
@@ -161,6 +178,81 @@ class ConversationService {
                             const errorMsg = `\n\n*Failed to generate image: ${error.message}*\n\n`;
                             fullResponse += errorMsg;
                             yield errorMsg;
+                        }
+                    }
+
+                    // --- Handle Threaded Book Tools ---
+                    if (['draft_chapter_page', 'create_chapter', 'update_book_page', 'delete_book_page'].includes(call.name)) {
+                        if (!updatedThread.bookId) {
+                            const errorMsg = '\n\n*Error: This conversation is not linked to a book. Please create a book first.*\n\n';
+                            yield errorMsg;
+                            fullResponse += errorMsg;
+                            continue;
+                        }
+
+                        const args = call.args || {};
+
+                        try {
+                            if (call.name === 'create_chapter') {
+                                yield `\n\n*Creating chapter: **${args.title}**...*\n\n`;
+                                const book = await bookService.addChapter(updatedThread.bookId, args.title);
+                                const newChapter = book.chapters[book.chapters.length - 1];
+                                const successMsg = `\n\n*Successfully created chapter: **${args.title}** (ID: ${newChapter.id}).*\n\n`;
+                                yield successMsg;
+                                fullResponse += successMsg;
+                            }
+
+                            if (call.name === 'draft_chapter_page') {
+                                const book = await bookService.getBook(updatedThread.bookId);
+                                let targetChapterId = args.chapterId;
+
+                                // Auto-select chapter if not provided
+                                if (!targetChapterId) {
+                                    if (book.type === 'paper' || book.chapters.length === 1) {
+                                        targetChapterId = book.chapters[0].id;
+                                    } else if (book.chapters.length > 0) {
+                                        targetChapterId = book.chapters[book.chapters.length - 1].id;
+                                    } else {
+                                        throw new Error('No chapters found in book. Please create a chapter first.');
+                                    }
+                                }
+
+                                yield `\n\n*Initiating background generation for a new page...*\n\n`;
+                                
+                                const jobData = {
+                                    bookId: updatedThread.bookId,
+                                    chapterId: targetChapterId,
+                                    threadId: threadId,
+                                    topic: args.brief
+                                };
+
+                                const job = await addJob('book-page-generation', jobData, userId);
+                                
+                                const successMsg = `\n\n*Background job started (ID: ${job.id}). The page will be added to the book once complete.*\n\n`;
+                                yield successMsg;
+                                fullResponse += successMsg;
+                            }
+
+                            if (call.name === 'update_book_page') {
+                                yield `\n\n*Updating page ID: ${args.pageId}...*\n\n`;
+                                await bookService.updatePage(args.pageId, { content: args.content });
+                                const successMsg = `\n\n*Successfully updated page content.*\n\n`;
+                                yield successMsg;
+                                fullResponse += successMsg;
+                            }
+
+                            if (call.name === 'delete_book_page') {
+                                yield `\n\n*Deleting page ID: ${args.pageId}...*\n\n`;
+                                await bookService.deletePage(args.pageId);
+                                const successMsg = `\n\n*Successfully removed page from the book.*\n\n`;
+                                yield successMsg;
+                                fullResponse += successMsg;
+                            }
+                        } catch (error) {
+                            console.error(`Book tool error (${call.name}):`, error);
+                            const errorMsg = `\n\n*Failed to execute ${call.name}: ${error.message}*\n\n`;
+                            yield errorMsg;
+                            fullResponse += errorMsg;
                         }
                     }
                 }
