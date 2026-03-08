@@ -9,6 +9,8 @@ import articleTemplateModel from './articleTemplateModel.js';
 import jobModel from './jobModel.js';
 import clientAppModel from './clientAppModel.js';
 import conversationModel from './conversationModel.js';
+import bookModel from './bookModel.js';
+import pageModel from './pageModel.js';
 
 // Export specific models
 export const User = userProfileModel;
@@ -21,6 +23,8 @@ export const ArticleTemplate = articleTemplateModel;
 export const Job = jobModel;
 export const ClientApp = clientAppModel;
 export const Conversation = conversationModel;
+export const Book = bookModel;
+export const Page = pageModel;
 
 // Helper to create simple models on the fly
 export const createModel = (collectionName, schema = null) => {

@@ -8,6 +8,10 @@ const conversationSchema = {
         type: String,
         required: true
     },
+    bookId: {
+        type: String, // Optional reference to the book being collaboratively authored
+        default: null
+    },
     title: {
         type: String,
         trim: true,

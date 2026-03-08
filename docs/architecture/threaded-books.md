@@ -9,7 +9,7 @@ This approach ensures the user's unique perspective, reasoning, and voice are de
 
 ### 1. Book (or Publication)
 Represents the overarching collection of drafted content.
-- **Attributes**: `id`, `userId`, `threadId` (reference to the primary conversational thread), `title`, `description`, `coverImage`, `status` (draft, published), `metadata` (tags, category).
+- **Attributes**: `id`, `userId`, `threadId` (reference to the primary conversational thread), `title`, `description`, `coverImage`, `status` (draft, published), `pageIds` (array of Page IDs for ordering), `metadata` (tags, category).
 
 ### 2. Page (or Chapter/Section)
 Represents a discrete unit of content within a Book.
