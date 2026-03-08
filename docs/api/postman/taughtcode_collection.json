@@ -273,7 +273,7 @@
 							"variable": [
 								{
 									"key": "threadId",
-									"value": "THREAD_ID"
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -312,7 +312,7 @@
 							"variable": [
 								{
 									"key": "threadId",
-									"value": "THREAD_ID"
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -337,7 +337,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"message\": \"Draw a futuristic city and draft a page about it.\"\n}",
+							"raw": "{\n    \"message\": \"Let's brainstorm about the origin of linguistics. Once we are ready, I'll ask you to draft a page.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -357,37 +357,7 @@
 							"variable": [
 								{
 									"key": "threadId",
-									"value": "THREAD_ID"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Thread",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/conversations/:threadId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"conversations",
-								":threadId"
-							],
-							"variable": [
-								{
-									"key": "threadId",
-									"value": "THREAD_ID"
+									"value": "{{THREAD_ID}}"
 								}
 							]
 						}
@@ -412,7 +382,39 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"The Origins of Linguistics\",\n    \"description\": \"A collaborative study on language evolution\",\n    \"threadId\": \"OPTIONAL_THREAD_ID\"\n}",
+							"raw": "{\n    \"title\": \"The Origins of Linguistics\",\n    \"description\": \"A collaborative study\",\n    \"type\": \"book\",\n    \"threadId\": \"{{THREAD_ID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/books",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Paper",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Quantum Scaling Research\",\n    \"description\": \"One flow paper\",\n    \"type\": \"paper\",\n    \"threadId\": \"{{THREAD_ID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -455,7 +457,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Book Details",
+					"name": "Get Full Book Hierarchy",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -466,18 +468,19 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/books/:bookId",
+							"raw": "{{base_url}}/books/:bookId/pages",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"books",
-								":bookId"
+								":bookId",
+								"pages"
 							],
 							"variable": [
 								{
 									"key": "bookId",
-									"value": "BOOK_ID"
+									"value": "{{BOOK_ID}}"
 								}
 							]
 						}
@@ -497,7 +500,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Updated Book Title\",\n    \"status\": \"published\"\n}",
+							"raw": "{\n    \"title\": \"Updated Title\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -516,17 +519,22 @@
 							"variable": [
 								{
 									"key": "bookId",
-									"value": "BOOK_ID"
+									"value": "{{BOOK_ID}}"
 								}
 							]
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
 				{
-					"name": "Delete Book",
+					"name": "Get Job Status",
 					"request": {
-						"method": "DELETE",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
@@ -535,18 +543,18 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/books/:bookId",
+							"raw": "{{base_url}}/jobs/:id",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"books",
-								":bookId"
+								"jobs",
+								":id"
 							],
 							"variable": [
 								{
-									"key": "bookId",
-									"value": "BOOK_ID"
+									"key": "id",
+									"value": "{{JOB_ID}}"
 								}
 							]
 						}
@@ -554,192 +562,42 @@
 					"response": []
 				},
 				{
-					"name": "Pages",
-					"item": [
-						{
-							"name": "Get Book Pages (Ordered)",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{auth_token}}",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/books/:bookId/pages",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"books",
-										":bookId",
-										"pages"
-									],
-									"variable": [
-										{
-											"key": "bookId",
-											"value": "BOOK_ID"
-										}
-									]
+					"name": "Queue Manual Job",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"article-generation\",\n    \"data\": {\n        \"topic\": \"The Future of AI\",\n        \"depth\": \"standard\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							},
-							"response": []
+							}
 						},
-						{
-							"name": "Update Page",
-							"request": {
-								"method": "PATCH",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{auth_token}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"title\": \"Revised Chapter 1\",\n    \"content\": \"<p>New content...</p>\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/books/:bookId/pages/:pageId",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"books",
-										":bookId",
-										"pages",
-										":pageId"
-									],
-									"variable": [
-										{
-											"key": "bookId",
-											"value": "BOOK_ID"
-										},
-										{
-											"key": "pageId",
-											"value": "PAGE_ID"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Delete Page",
-							"request": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{auth_token}}",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/books/:bookId/pages/:pageId",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"books",
-										":bookId",
-										"pages",
-										":pageId"
-									],
-									"variable": [
-										{
-											"key": "bookId",
-											"value": "BOOK_ID"
-										},
-										{
-											"key": "pageId",
-											"value": "PAGE_ID"
-										}
-									]
-								}
-							},
-							"response": []
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"jobs"
+							]
 						}
-					]
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "Articles",
 			"item": [
-				{
-					"name": "Create Article",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"My First Article\",\n    \"content\": \"<h1>Hello World</h1><p>This is my first article content.</p>\",\n    \"tags\": [\"tech\", \"coding\"],\n    \"status\": \"published\",\n    \"access\": \"free\",\n    \"backgroundImage\": \"https://example.com/bg.png\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/articles",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Generate Article (AI)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"topic\": \"The Future of Quantum Computing\",\n    \"depth\": \"deep-dive\",\n    \"instructions\": \"Focus on scalability challenges\",\n    \"templateId\": \"OPTIONAL_TEMPLATE_ID\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/articles/generate",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"articles",
-								"generate"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Articles",
 					"request": {
@@ -781,7 +639,6 @@
 					"",
 					"const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;",
 					"",
-					"// Check if token exists and is not expired (tokens typically last 1 hour)",
 					"if (currentToken && tokenExpiry && currentTime < tokenExpiry) {",
 					"    console.log(\"Using existing valid token\");",
 					"} else {",
@@ -808,7 +665,6 @@
 					"            const jsonResponse = res.json();",
 					"            if (jsonResponse.idToken) {",
 					"                pm.environment.set(\"auth_token\", jsonResponse.idToken);",
-					"                // Set expiry to 55 minutes from now (token lasts 1 hour, refresh 5 min early)",
 					"                pm.environment.set(\"token_expiry\", currentTime + (55 * 60 * 1000));",
 					"                console.log(\"New token obtained and stored\");",
 					"            } else {",
