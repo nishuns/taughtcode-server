@@ -25,6 +25,9 @@ router.get('/', bookController.getUserBooks);
 // Get a specific book
 router.get('/:bookId', bookController.getBook);
 
+// Get a book with full hierarchy (populated chapters and pages)
+router.get('/:bookId/full', bookController.getFullBook);
+
 // Update book metadata
 router.patch('/:bookId', bookController.updateBook);
 

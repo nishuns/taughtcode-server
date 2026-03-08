@@ -64,6 +64,26 @@ class BookController {
     }
 
     /**
+     * Get a book with full hierarchy (chapters and pages)
+     */
+    async getFullBook(req, res) {
+        try {
+            const { bookId } = req.params;
+            const fullBook = await bookService.getFullBookContents(bookId);
+            
+            res.status(200).json({
+                success: true,
+                data: fullBook
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    /**
      * Update book metadata
      */
     async updateBook(req, res) {
