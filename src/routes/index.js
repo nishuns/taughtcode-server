@@ -7,6 +7,7 @@ import clientAppRoutes from './clientApps.js';
 import integrationRoutes from './integrations.js';
 import conversationRoutes from './conversations.js';
 import bookRoutes from './books.js';
+import eventRoutes from './events.js';
 
 const router = express.Router();
 
@@ -39,6 +40,9 @@ router.use('/conversations', conversationRoutes);
 
 // Book Routes
 router.use('/books', bookRoutes);
+
+// Event Routes
+router.use('/events', eventRoutes);
 
 /**
  * @swagger
@@ -77,4 +81,3 @@ router.get('/health', (req, res) => {
 
 
 export default router;
-
