@@ -23,6 +23,16 @@ export async function getAllClientApps(req, res) {
     }
 }
 
+export async function registerDevice(req, res) {
+    try {
+        const result = await clientAppService.registerDevice(req.params.id, req.body);
+        res.status(200).json(result);
+    } catch (error) {
+        logger.error('Error registering device:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+}
+
 export async function getClientApp(req, res) {
     try {
         const app = await clientAppService.getClientAppById(req.params.id);

@@ -64,3 +64,29 @@ export async function deleteClientApp(id) {
     logger.info(`Client application deleted: ${id}`);
     return true;
 }
+
+/**
+ * Registers a device for a client application.
+ */
+export async function registerDevice(id, deviceInfo) {
+    const app = await getClientAppById(id);
+    
+    const registeredDevices = app.registeredDevices || [];
+    const existingIndex = registeredDevices.findIndex(d => d.deviceId === deviceInfo.deviceId);
+
+    if (existingIndex > -1) {
+        registeredDevices[existingIndex] = {
+            ...registeredDevices[existingIndex],
+            ...deviceInfo,
+            lastConnectedAt: new Date()
+        };
+    } else {
+        registeredDevices.push({
+            ...deviceInfo,
+            lastConnectedAt: new Date()
+        });
+    }
+
+    await ClientApp.findByIdAndUpdate(id, { registeredDevices });
+    return { success: true, message: 'Device registered successfully' };
+}

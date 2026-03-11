@@ -13,6 +13,7 @@ router.use(isAuthenticated);
 router.get('/', clientAppController.getAllClientApps);
 router.post('/', clientAppController.createClientApp);
 router.get('/:id', clientAppController.getClientApp);
+router.post('/:id/devices', clientAppController.registerDevice);
 router.patch('/:id', clientAppController.updateClientApp);
 router.delete('/:id', clientAppController.deleteClientApp);
 

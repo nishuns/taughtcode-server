@@ -2,6 +2,7 @@ import app from './app.js';
 // import database from './config/database.js';
 import { db } from './config/firebase.js';
 import logger from './utils/logger.js';
+import { initWebSocket } from './config/websocket.js';
 
 // Ensure all models are registered before connecting to database
 // This prevents "Schema hasn't been registered" errors
@@ -37,6 +38,9 @@ async function startServer() {
             logger.log(`📖 Documentation available at http://localhost:${PORT}/docs`);
             logger.log(`🔧 Swagger UI available at http://localhost:${PORT}/api-docs`);
         });
+
+        // Initialize WebSockets
+        initWebSocket(server);
 
         // Graceful shutdown
         process.on('SIGTERM', async () => {
