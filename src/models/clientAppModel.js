@@ -27,6 +27,10 @@ const clientAppSchema = {
         enum: ['active', 'inactive'],
         default: 'active'
     },
+    registeredDevices: {
+        type: Array, // Array of { deviceId, name, type, lastConnectedAt, socketId }
+        default: []
+    },
     createdAt: {
         type: Date,
         default: () => new Date()

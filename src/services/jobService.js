@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import { getWorkerFunction } from '../workers/jobRegistry.js';
 import { jobQueue } from '../workers/queueFactory.js';
 import { realtimeDb } from '../config/firebase.js';
+import { emitToUser } from '../config/websocket.js';
 
 // Event Emitter for notifications
 export const jobEvents = new EventEmitter();
@@ -26,6 +27,14 @@ async function addJob(type, data, userId) {
 
     logger.info(`Job persisted: ${job.id} (${type})`);
     
+    // Emit via WebSocket
+    emitToUser(userId, 'job:created', {
+        id: job.id,
+        type: job.type,
+        status: job.status,
+        progress: job.progress
+    });
+
     // 2. Push to BullMQ (Execution Trigger)
     await jobQueue.add(type, {
         firestoreJobId: job.id,
@@ -102,6 +111,7 @@ async function updateJobStatus(jobId, status, progress, result = null, error = n
     
     // Sync to Realtime Database for client-side notifications
     if (updatedJob.userId) {
+        // Sync to Realtime Database
         try {
             await realtimeDb.ref(`notifications/${updatedJob.userId}/jobs/${jobId}`).set({
                 id: jobId,
@@ -114,6 +124,23 @@ async function updateJobStatus(jobId, status, progress, result = null, error = n
         } catch (dbError) {
             logger.error(`Error syncing job ${jobId} to Realtime DB:`, dbError);
         }
+
+        // Emit via WebSocket
+        emitToUser(updatedJob.userId, `job:${status}`, {
+            id: jobId,
+            type: updatedJob.type,
+            status: updatedJob.status,
+            progress: updatedJob.progress,
+            result,
+            error
+        });
+        
+        emitToUser(updatedJob.userId, 'job:update', {
+            id: jobId,
+            type: updatedJob.type,
+            status: updatedJob.status,
+            progress: updatedJob.progress
+        });
     }
 
     // Notify
