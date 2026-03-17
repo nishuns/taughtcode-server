@@ -113,6 +113,21 @@ const getUserById = async (req, res) => {
 };
 
 /**
+ * Get public admin profile
+ */
+const getPublicAdminProfile = async (req, res) => {
+    try {
+        const user = await userService.getPrimaryAdmin();
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'Admin profile not found' });
+        }
+        res.json({ success: true, data: user });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
  * Update user profile
  */
 const updateUser = async (req, res) => {

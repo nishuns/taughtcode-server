@@ -14,6 +14,9 @@ const router = express.Router();
  *   description: User profile management
  */
 
+// Public routes
+router.get('/public/admin', userController.getPublicAdminProfile);
+
 // Middleware
 router.use(isAuthenticated);
 
