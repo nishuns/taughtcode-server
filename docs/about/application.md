@@ -14,6 +14,8 @@ The primary mission of TaughtCode is to provide developers and content creators 
 ## Key Features
 
 - **Multimodal AI Orchestration**: Leverages advanced AI (like Gemini) for generating text, high-resolution background images, and context-aware section graphics.
+- **Collaborative Co-Authoring (Threaded Books)**: Build long-form content, research papers, and technical guides iteratively using real-time conversational threads, AI tool calling, and background drafting.
+- **Real-Time Streaming**: Delivers fast, chunked AI responses via Server-Sent Events (SSE).
 - **Flexible Data Layer**: Built on top of Firebase (Firestore and Realtime Database) for real-time performance and scalability.
 - **Modular Provider System**: Easily swappable providers for AI, Storage, Auth, and Integrations.
 - **Async Job Queue**: Handles long-running AI tasks reliably using BullMQ and Redis.
