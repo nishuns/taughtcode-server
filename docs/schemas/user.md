@@ -8,11 +8,15 @@ The User Profile represents a registered user in the system. It contains persona
 | `email` | String | Yes | User's email address. Must be unique. |
 | `displayName` | String | Yes | User's full name or display name. |
 | `photoURL` | String | No | URL to the profile picture (stored in Firebase Storage). |
+| `coverURL` | String | No | URL to the cover photo. |
 | `occupation` | String | No | User's job title or occupation. |
 | `bio` | String | No | Short biography (max 1000 chars). |
+| `skills` | Array | No | List of technical/soft skills. |
 | `hobbies` | Array | No | List of hobbies (Strings). |
 | `interests` | Array | No | List of interests (Strings). |
 | `expertise` | Array | No | Areas of expertise (Strings). |
+| `gallery` | Array | No | Array of objects: `{ url, type, title, description, createdAt }`. |
+| `featured` | Array | No | Array of objects: `{ type, id, title, url }`. |
 | `writingStyle` | String | No | Preferred AI writing style (e.g., 'casual', 'professional'). |
 | `organizationId` | String | No | ID of the organization the user belongs to. |
 | `role` | String | Yes | User role (`user`, `admin`, `moderator`). Default: `user`. |

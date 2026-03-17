@@ -49,6 +49,7 @@ Inside the `streamReply` generator, we listen for `functionCalls` within the str
 
 ## Current AI Tools
 - `generate_image`: Generates images and uploads them to Firebase Storage.
-- `draft_book_page`: Initiates a background job to co-author a book page.
+- `create_chapter`: Adds a new named container to a 'book' type publication.
+- `draft_chapter_page`: Initiates a background job to synthesize the conversation into a Page within a specific chapter.
 - `update_book_page`: Refines an existing page in a book.
 - `delete_book_page`: Removes a page from a book.
