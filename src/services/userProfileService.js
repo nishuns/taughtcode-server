@@ -194,6 +194,14 @@ async function listUsers(query = {}, options = {}) {
 }
 
 /**
+ * Get the primary admin profile (for public landing page)
+ */
+async function getPrimaryAdmin() {
+    const admins = await User.find({ role: 'admin', status: 'active' }, { limit: 1 });
+    return admins[0] || null;
+}
+
+/**
  * Update user's profile picture
  * @param {string} uid 
  * @param {Buffer} fileBuffer 

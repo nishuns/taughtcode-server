@@ -40,6 +40,10 @@ const userProfileSchema = {
         type: Array,
         default: []
     },
+    projects: {
+        type: Array, // Array of { title, description, link }
+        default: []
+    },
     expertise: {
         type: Array,
         default: [] // Areas the user is knowledgeable in

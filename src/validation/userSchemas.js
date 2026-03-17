@@ -46,8 +46,16 @@ export const onboardUserSchema = Joi.object({
 
 export const updateUserSchema = Joi.object({
     displayName: Joi.string().min(2).max(50),
-    occupation: Joi.string(),
-    bio: Joi.string().max(1000),
+    occupation: Joi.string().allow(''),
+    bio: Joi.string().max(1000).allow(''),
+    skills: Joi.array().items(Joi.string()).optional(),
+    projects: Joi.array().items(
+        Joi.object({
+            title: Joi.string().required(),
+            description: Joi.string().allow(''),
+            link: Joi.string().uri().allow('').optional()
+        })
+    ).optional(),
     hobbies: Joi.array().items(Joi.string()),
     interests: Joi.array().items(Joi.string()),
     expertise: Joi.array().items(Joi.string()),
