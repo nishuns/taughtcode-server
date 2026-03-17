@@ -1,5 +1,6 @@
 import { User } from '../models/index.js';
 import logger from '../utils/logger.js';
+import * as storageService from './storageService.js';
 
 /**
  * Create a new user profile
@@ -192,6 +193,109 @@ async function listUsers(query = {}, options = {}) {
     );
 }
 
+/**
+ * Update user's profile picture
+ * @param {string} uid 
+ * @param {Buffer} fileBuffer 
+ * @param {string} mimeType 
+ */
+async function updateProfilePicture(uid, fileBuffer, mimeType) {
+    const user = await getUser(uid);
+    if (!user) throw new Error('User not found');
+
+    const filename = `profile_${Date.now()}.${mimeType.split('/')[1]}`;
+    const uploadResult = await storageService.uploadUserAsset(
+        user.uid,
+        fileBuffer,
+        mimeType,
+        'profile',
+        filename
+    );
+
+    return await updateUser(uid, { photoURL: uploadResult.url });
+}
+
+/**
+ * Update user's cover photo
+ * @param {string} uid 
+ * @param {Buffer} fileBuffer 
+ * @param {string} mimeType 
+ */
+async function updateCoverPhoto(uid, fileBuffer, mimeType) {
+    const user = await getUser(uid);
+    if (!user) throw new Error('User not found');
+
+    const filename = `cover_${Date.now()}.${mimeType.split('/')[1]}`;
+    const uploadResult = await storageService.uploadUserAsset(
+        user.uid,
+        fileBuffer,
+        mimeType,
+        'profile',
+        filename
+    );
+
+    return await updateUser(uid, { coverURL: uploadResult.url });
+}
+
+/**
+ * Add an asset to the user's gallery
+ * @param {string} uid 
+ * @param {Buffer} fileBuffer 
+ * @param {string} mimeType 
+ * @param {Object} metadata { title, description, type: 'photo'|'video' }
+ */
+async function addGalleryAsset(uid, fileBuffer, mimeType, metadata = {}) {
+    const user = await getUser(uid);
+    if (!user) throw new Error('User not found');
+
+    const fileType = metadata.type || (mimeType.startsWith('video') ? 'video' : 'photo');
+    const filename = `gallery_${Date.now()}.${mimeType.split('/')[1]}`;
+    
+    const uploadResult = await storageService.uploadUserAsset(
+        user.uid,
+        fileBuffer,
+        mimeType,
+        'gallery',
+        filename
+    );
+
+    const newAsset = {
+        url: uploadResult.url,
+        type: fileType,
+        title: metadata.title || '',
+        description: metadata.description || '',
+        createdAt: new Date()
+    };
+
+    const updatedGallery = [...(user.gallery || []), newAsset];
+    return await updateUser(uid, { gallery: updatedGallery });
+}
+
+/**
+ * Remove an asset from the user's gallery
+ * @param {string} uid 
+ * @param {string} assetUrl 
+ */
+async function deleteGalleryAsset(uid, assetUrl) {
+    const user = await getUser(uid);
+    if (!user) throw new Error('User not found');
+
+    // 1. Delete from storage if it's our storage
+    if (assetUrl.includes('storage.googleapis.com')) {
+        try {
+            const urlObj = new URL(assetUrl);
+            const path = urlObj.pathname.split('/').slice(2).join('/');
+            await storageService.deleteFile(path);
+        } catch (e) {
+            logger.warn(`Failed to delete gallery file from storage: ${assetUrl}`);
+        }
+    }
+
+    // 2. Remove from database
+    const updatedGallery = (user.gallery || []).filter(item => item.url !== assetUrl);
+    return await updateUser(uid, { gallery: updatedGallery });
+}
+
 export {
     createUser,
     getUser,
@@ -202,5 +306,9 @@ export {
     deleteUserById,
     updateLastActive,
     isDisplayNameTaken,
-    listUsers
+    listUsers,
+    updateProfilePicture,
+    updateCoverPhoto,
+    addGalleryAsset,
+    deleteGalleryAsset
 };

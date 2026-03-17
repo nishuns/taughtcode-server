@@ -23,6 +23,10 @@ const userProfileSchema = {
         type: String,
         trim: true
     },
+    coverURL: {
+        type: String,
+        trim: true
+    },
     occupation: {
         type: String,
         trim: true
@@ -32,6 +36,22 @@ const userProfileSchema = {
         maxlength: 1000,
         trim: true
     },
+    skills: {
+        type: Array,
+        default: []
+    },
+    expertise: {
+        type: Array,
+        default: [] // Areas the user is knowledgeable in
+    },
+    gallery: {
+        type: Array, // Array of { url, type: 'photo'|'video', title, createdAt }
+        default: []
+    },
+    featured: {
+        type: Array, // Array of { type: 'article'|'image'|'video', id, title, url }
+        default: []
+    },
     hobbies: {
         type: Array,
         default: []
@@ -39,10 +59,6 @@ const userProfileSchema = {
     interests: {
         type: Array,
         default: []
-    },
-    expertise: {
-        type: Array,
-        default: [] // Areas the user is knowledgeable in
     },
     writingStyle: {
         type: String,
