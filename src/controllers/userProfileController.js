@@ -201,6 +201,84 @@ const activateUser = async (req, res) => {
     }
 };
 
+/**
+ * Update Profile Picture
+ */
+const updateProfilePicture = async (req, res) => {
+    try {
+        const { uid } = req.user;
+        if (!req.file) throw new Error('No image file provided');
+
+        const updatedUser = await userService.updateProfilePicture(
+            uid,
+            req.file.buffer,
+            req.file.mimetype
+        );
+
+        res.json({ success: true, data: updatedUser });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Update Cover Photo
+ */
+const updateCoverPhoto = async (req, res) => {
+    try {
+        const { uid } = req.user;
+        if (!req.file) throw new Error('No image file provided');
+
+        const updatedUser = await userService.updateCoverPhoto(
+            uid,
+            req.file.buffer,
+            req.file.mimetype
+        );
+
+        res.json({ success: true, data: updatedUser });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Add Asset to Gallery
+ */
+const addGalleryAsset = async (req, res) => {
+    try {
+        const { uid } = req.user;
+        const metadata = req.body;
+        if (!req.file) throw new Error('No file provided');
+
+        const updatedUser = await userService.addGalleryAsset(
+            uid,
+            req.file.buffer,
+            req.file.mimetype,
+            metadata
+        );
+
+        res.json({ success: true, data: updatedUser });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Delete Asset from Gallery
+ */
+const deleteGalleryAsset = async (req, res) => {
+    try {
+        const { uid } = req.user;
+        const { assetUrl } = req.body;
+        if (!assetUrl) throw new Error('Asset URL is required');
+
+        const updatedUser = await userService.deleteGalleryAsset(uid, assetUrl);
+        res.json({ success: true, data: updatedUser });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
 export {
     onboardUser,
     getMe,
@@ -209,5 +287,9 @@ export {
     getAllUsers,
     deactivateUser,
     disableUser,
-    activateUser
+    activateUser,
+    updateProfilePicture,
+    updateCoverPhoto,
+    addGalleryAsset,
+    deleteGalleryAsset
 };

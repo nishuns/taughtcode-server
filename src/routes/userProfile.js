@@ -132,6 +132,89 @@ router.patch('/me',
 
 /**
  * @swagger
+ * /users/me/photo:
+ *   patch:
+ *     summary: Update profile picture
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ */
+router.patch('/me/photo', upload.single('file'), userController.updateProfilePicture);
+
+/**
+ * @swagger
+ * /users/me/cover:
+ *   patch:
+ *     summary: Update cover photo
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ */
+router.patch('/me/cover', upload.single('file'), userController.updateCoverPhoto);
+
+/**
+ * @swagger
+ * /users/me/gallery:
+ *   post:
+ *     summary: Add asset to gallery
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ */
+router.post('/me/gallery', upload.single('file'), userController.addGalleryAsset);
+
+/**
+ * @swagger
+ * /users/me/gallery:
+ *   delete:
+ *     summary: Remove asset from gallery
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               assetUrl:
+ *                 type: string
+ */
+router.delete('/me/gallery', userController.deleteGalleryAsset);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get user by ID
