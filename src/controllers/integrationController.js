@@ -112,7 +112,14 @@ export async function initiateAuth(req, res) {
 export async function handleCallback(req, res) {
     try {
         const { provider } = req.params;
-        const { code, state } = req.query;
+        const { code, state, error, error_description } = req.query;
+        
+        // Handle provider errors (e.g. user cancelled)
+        if (error) {
+            throw new Error(error_description || error);
+        }
+
+        if (!code) throw new Error('No authorization code provided');
         
         // In a real app, validate state matches user session
         // Here we assume state is the userId/uid
@@ -128,6 +135,8 @@ export async function handleCallback(req, res) {
     } catch (error) {
         logger.error(`IntegrationController: OAuth Callback Error [${req.params.provider}]:`, error);
         const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-        res.redirect(`${clientUrl}/admin/profile?integration_error=${error.message}`);
+        // URL encode the error message to ensure safe redirect
+        const encodedError = encodeURIComponent(error.message);
+        res.redirect(`${clientUrl}/admin/profile?integration_error=${encodedError}`);
     }
 }

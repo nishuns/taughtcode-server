@@ -27,21 +27,26 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
      */
     async connect() {
         try {
-            if (!this.client) {
+            if (!this.config?.accessToken) {
                 throw new Error("LinkedIn Access Token is required for connection");
             }
             
-            // Note: Using OIDC scopes (openid, profile, email) requires fetching from /userinfo
-            // instead of the legacy /v2/me endpoint.
-            const { data } = await this.client.get("https://api.linkedin.com/userinfo");
+            // Note: Using OIDC scopes (openid, profile, email) requires fetching from /userinfo.
+            // We use a fresh axios call to avoid the 'v2' baseURL and Restli headers which can cause 404s/errors on OIDC endpoints.
+            const { data } = await axios.get("https://api.linkedin.com/userinfo", {
+                headers: {
+                    Authorization: `Bearer ${this.config.accessToken}`,
+                    Accept: 'application/json'
+                }
+            });
             
-            // In OIDC response, 'sub' is the unique member ID
             const memberId = data.sub;
             if (!memberId) throw new Error("Could not retrieve member ID from LinkedIn");
 
             return {
                 success: true,
                 urn: `urn:li:person:${memberId}`,
+                personUrn: `urn:li:person:${memberId}`,
                 firstName: data.given_name,
                 lastName: data.family_name,
                 email: data.email,
