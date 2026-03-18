@@ -81,3 +81,46 @@ export async function listIntegrations(req, res) {
         res.status(400).json({ success: false, error: error.message });
     }
 }
+
+/**
+ * Initiate OAuth Flow
+ */
+export async function initiateAuth(req, res) {
+    try {
+        const { provider } = req.params;
+        // Use user uid as state for simplicity in this dev environment, 
+        // in production this should be a secure random string mapped to the user.
+        const state = req.user.uid; 
+        
+        const authUrl = integrationService.getAuthUrl(provider, state);
+        res.json({ success: true, authUrl });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+}
+
+/**
+ * Handle OAuth Callback
+ */
+export async function handleCallback(req, res) {
+    try {
+        const { provider } = req.params;
+        const { code, state } = req.query;
+        
+        // In a real app, validate state matches user session
+        // Here we assume state is the userId/uid
+        const userId = await userService.getUser(state).then(u => u?.id);
+        
+        if (!userId) throw new Error('Invalid state or user not found');
+
+        const accountInfo = await integrationService.handleCallback(provider, code, userId);
+        
+        // Redirect back to client settings page
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${clientUrl}/admin/profile?integration_success=${provider}`);
+    } catch (error) {
+        logger.error(`IntegrationController: OAuth Callback Error [${req.params.provider}]:`, error);
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${clientUrl}/admin/profile?integration_error=${error.message}`);
+    }
+}

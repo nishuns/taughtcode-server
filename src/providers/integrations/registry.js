@@ -1,7 +1,9 @@
 import GitHubIntegrationProvider from "./github/index.js";
+import LinkedInIntegrationProvider from "./linkedin/index.js";
 
 const integrationProviders = {
     github: GitHubIntegrationProvider,
+    linkedin: LinkedInIntegrationProvider,
 };
 
 /**

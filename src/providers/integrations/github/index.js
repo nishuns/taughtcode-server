@@ -65,12 +65,18 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
     }
 
     /**
-     * Example sync: Get latest commits or content
+     * Sync data or fetch info
+     * @param {Object} options 
+     * @param {string} options.action - 'get_content', 'get_repos'
      */
     async sync(options = {}) {
         try {
-            const { owner, repo, path = "" } = { ...this.config, ...options };
+            const { action = 'get_content', owner, repo, path = "" } = { ...this.config, ...options };
             
+            if (action === 'get_repos') {
+                return await this.getRepositories();
+            }
+
             const { data } = await this.client.repos.getContent({
                 owner,
                 repo,
@@ -90,13 +96,18 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
         try {
             const { data } = await this.client.repos.listForAuthenticatedUser({
                 sort: 'updated',
-                per_page: 100
+                per_page: 100,
+                affiliation: 'owner'
             });
             return data.map(repo => ({
                 id: repo.id,
-                name: repo.name,
+                title: repo.name,
+                description: repo.description || '',
+                link: repo.html_url,
                 full_name: repo.full_name,
-                private: repo.private
+                private: repo.private,
+                stars: repo.stargazers_count,
+                language: repo.language
             }));
         } catch (error) {
             throw new Error(`GitHub API Error: ${error.message}`);

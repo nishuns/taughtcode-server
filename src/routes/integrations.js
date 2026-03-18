@@ -11,7 +11,10 @@ const router = express.Router();
  *   description: Third-party service integrations management
  */
 
-// All integration routes require authentication
+// OAuth Callbacks (Publicly accessible, validated via state)
+router.get('/:provider/callback', integrationController.handleCallback);
+
+// Management routes require authentication
 router.use(isAuthenticated);
 
 /**
@@ -22,6 +25,15 @@ router.use(isAuthenticated);
  *     tags: [Integrations]
  */
 router.get('/', integrationController.listIntegrations);
+
+/**
+ * @swagger
+ * /integrations/{provider}/auth:
+ *   get:
+ *     summary: Initiate OAuth flow for a provider
+ *     tags: [Integrations]
+ */
+router.get('/:provider/auth', integrationController.initiateAuth);
 
 /**
  * @swagger
