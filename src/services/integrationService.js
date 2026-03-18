@@ -3,7 +3,6 @@ import logger from '../utils/logger.js';
 import { IntegrationProvider } from '../providers/integrations/registry.js';
 import { INTEGRATIONS_CONFIG } from '../config/integrations.js';
 import axios from 'axios';
-import crypto from 'crypto';
 
 /**
  * Generate OAuth Authorization URL
@@ -98,7 +97,9 @@ export async function updateIntegration(userId, providerName, config) {
     const integrations = profile.integrations || {};
     integrations[providerName] = {
         ...config,
-        accountName: validation.user,
+        // Normalize identifying fields across providers
+        accountName: validation.accountName || validation.user || validation.name || validation.urn,
+        personUrn: validation.personUrn || validation.urn || null,
         connectedAt: integrations[providerName]?.connectedAt || new Date(),
         updatedAt: new Date()
     };

@@ -31,7 +31,8 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
             return {
                 success: true,
                 user: data.login,
-                name: data.name
+                name: data.name,
+                accountName: data.login
             };
         } catch (error) {
             throw new Error(`GitHub Connection Error: ${error.message}`);

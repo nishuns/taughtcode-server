@@ -73,11 +73,18 @@ export async function removeIntegration(req, res) {
 export async function listIntegrations(req, res) {
     try {
         const userId = await getUserId(req);
-        if (!userId) throw new Error('User profile not found');
+        if (!userId) {
+            // New user without profile doc yet
+            return res.json({ success: true, data: {} });
+        }
 
         const integrations = await integrationService.listIntegrations(userId);
         res.json({ success: true, data: integrations });
     } catch (error) {
+        // If it's just "User not found" from the service, return empty integrations
+        if (error.message.includes('not found')) {
+            return res.json({ success: true, data: {} });
+        }
         res.status(400).json({ success: false, error: error.message });
     }
 }
