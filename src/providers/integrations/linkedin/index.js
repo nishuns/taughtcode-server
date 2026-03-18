@@ -36,8 +36,9 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
             let firstName, lastName, accountName, picture;
 
             try {
-                // Try modern OpenID Connect userinfo endpoint first
-                const response = await axios.get("https://api.linkedin.com/userinfo", {
+                // Try modern OpenID Connect userinfo endpoint (SSID)
+                // The user clarified this is /v2/userinfo
+                const response = await axios.get("https://api.linkedin.com/v2/userinfo", {
                     headers: {
                         Authorization: `Bearer ${this.config.accessToken}`,
                         Accept: 'application/json'
@@ -50,8 +51,8 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
                 accountName = `${firstName} ${lastName}`;
                 picture = data.picture;
             } catch (oidcError) {
-                // Fallback to legacy /v2/me endpoint if OIDC is not configured or fails
-                console.warn("LinkedIn: OIDC /userinfo failed, trying legacy /v2/me", oidcError.message);
+                // Fallback to legacy /v2/me endpoint
+                console.warn("LinkedIn: OIDC /v2/userinfo failed, trying legacy /v2/me", oidcError.message);
                 const response = await axios.get("https://api.linkedin.com/v2/me", {
                     headers: {
                         Authorization: `Bearer ${this.config.accessToken}`,
