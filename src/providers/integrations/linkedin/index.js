@@ -31,27 +31,50 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
                 throw new Error("LinkedIn Access Token is required for connection");
             }
             
-            // Note: Using OIDC scopes (openid, profile, email) requires fetching from /userinfo.
-            // We use a fresh axios call to avoid the 'v2' baseURL and Restli headers which can cause 404s/errors on OIDC endpoints.
-            const { data } = await axios.get("https://api.linkedin.com/userinfo", {
-                headers: {
-                    Authorization: `Bearer ${this.config.accessToken}`,
-                    Accept: 'application/json'
-                }
-            });
+            let data;
+            let memberId;
+            let firstName, lastName, accountName, picture;
+
+            try {
+                // Try modern OpenID Connect userinfo endpoint first
+                const response = await axios.get("https://api.linkedin.com/userinfo", {
+                    headers: {
+                        Authorization: `Bearer ${this.config.accessToken}`,
+                        Accept: 'application/json'
+                    }
+                });
+                data = response.data;
+                memberId = data.sub;
+                firstName = data.given_name;
+                lastName = data.family_name;
+                accountName = `${firstName} ${lastName}`;
+                picture = data.picture;
+            } catch (oidcError) {
+                // Fallback to legacy /v2/me endpoint if OIDC is not configured or fails
+                console.warn("LinkedIn: OIDC /userinfo failed, trying legacy /v2/me", oidcError.message);
+                const response = await axios.get("https://api.linkedin.com/v2/me", {
+                    headers: {
+                        Authorization: `Bearer ${this.config.accessToken}`,
+                        "X-Restli-Protocol-Version": "2.0.0"
+                    }
+                });
+                data = response.data;
+                memberId = data.id;
+                firstName = data.localizedFirstName;
+                lastName = data.localizedLastName;
+                accountName = `${firstName} ${lastName}`;
+            }
             
-            const memberId = data.sub;
             if (!memberId) throw new Error("Could not retrieve member ID from LinkedIn");
 
             return {
                 success: true,
                 urn: `urn:li:person:${memberId}`,
                 personUrn: `urn:li:person:${memberId}`,
-                firstName: data.given_name,
-                lastName: data.family_name,
-                email: data.email,
-                picture: data.picture,
-                accountName: `${data.given_name} ${data.family_name}`
+                firstName,
+                lastName,
+                accountName,
+                picture
             };
         } catch (error) {
             const message = error.response?.data?.message || error.message;
