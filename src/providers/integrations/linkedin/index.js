@@ -31,14 +31,22 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
                 throw new Error("LinkedIn Access Token is required for connection");
             }
             
-            // Get user profile to verify token and get URN
-            const { data } = await this.client.get("/me");
+            // Note: Using OIDC scopes (openid, profile, email) requires fetching from /userinfo
+            // instead of the legacy /v2/me endpoint.
+            const { data } = await this.client.get("https://api.linkedin.com/userinfo");
             
+            // In OIDC response, 'sub' is the unique member ID
+            const memberId = data.sub;
+            if (!memberId) throw new Error("Could not retrieve member ID from LinkedIn");
+
             return {
                 success: true,
-                urn: `urn:li:person:${data.id}`,
-                firstName: data.localizedFirstName,
-                lastName: data.localizedLastName
+                urn: `urn:li:person:${memberId}`,
+                firstName: data.given_name,
+                lastName: data.family_name,
+                email: data.email,
+                picture: data.picture,
+                accountName: `${data.given_name} ${data.family_name}`
             };
         } catch (error) {
             const message = error.response?.data?.message || error.message;

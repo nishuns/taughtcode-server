@@ -23,8 +23,9 @@ The primary mission of TaughtCode is to provide developers and content creators 
 
 ## Developer Resources
 
-To facilitate rapid development and testing, we provide a pre-configured Postman collection containing all available endpoints, environment variables, and example payloads.
+To facilitate rapid development and testing, we provide documentation on our policies and technical integrations.
 
+- **Privacy Policy**: [privacy-policy.md](privacy-policy.md)
 - **Download Postman Collection**: [taughtcode_collection.json](../api/postman/taughtcode_collection.json)
 
 ## Vision

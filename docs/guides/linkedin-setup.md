@@ -21,9 +21,9 @@ LinkedIn requires you to verify your association with the Page you selected:
 
 ## Step 4: Enable Permissions (Products)
 1. Go to the **"Products"** tab in your app settings.
-2. Find **"Share on LinkedIn"** and click **"Request access"**.
-3. Find **"Sign In with LinkedIn using OpenID Connect"** and click **"Request access"**.
-*Note: Some products may take a few moments to be approved automatically.*
+2. Find **"Share on LinkedIn"** and click **"Request access"**. (Used for posting content).
+3. Find **"Sign In with LinkedIn using OpenID Connect"** and click **"Request access"**. (This is mandatory for the initial connection and profile sync).
+*Note: These products are usually approved automatically within a few minutes.*
 
 ## Step 5: Get Your Credentials
 1. Go to the **"Auth"** tab.

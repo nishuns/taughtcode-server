@@ -297,6 +297,7 @@ const deleteGalleryAsset = async (req, res) => {
 export {
     onboardUser,
     getMe,
+    getPublicAdminProfile,
     getUserById,
     updateUser,
     getAllUsers,
