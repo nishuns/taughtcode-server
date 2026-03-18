@@ -97,6 +97,7 @@ export async function updateIntegration(userId, providerName, config) {
     const integrations = profile.integrations || {};
     integrations[providerName] = {
         ...config,
+        connected: true, // Explicitly set connected status
         // Normalize identifying fields across providers
         accountName: validation.accountName || validation.user || validation.name || validation.urn,
         personUrn: validation.personUrn || validation.urn || null,

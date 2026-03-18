@@ -93,9 +93,7 @@ const userProfileSchema = {
     },
     integrations: {
         type: Object,
-        default: {
-            github: null // Stores { accessToken, owner, repo, updatedAt }
-        }
+        default: {}
     },
     organizationId: {
         type: String, // Link to Organization Model
