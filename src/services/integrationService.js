@@ -15,6 +15,11 @@ export async function getConfigForUser(userId, providerName) {
     const userConfig = profile.integrations?.[providerName] || {};
     const defaultConfig = INTEGRATIONS_CONFIG[providerName] || {};
 
+    logger.debug(`IntegrationService: Resolving config for ${providerName} (User: ${userId})`, { 
+        hasUserClientId: !!userConfig.clientId, 
+        hasDefaultClientId: !!defaultConfig.clientId 
+    });
+
     return {
         clientId: userConfig.clientId || defaultConfig.clientId,
         clientSecret: userConfig.clientSecret || defaultConfig.clientSecret,
