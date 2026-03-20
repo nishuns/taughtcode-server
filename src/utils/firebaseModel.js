@@ -290,7 +290,25 @@ class FirebaseModel {
             throw new Error(`Validation failed: ${errors.join(', ')}`)
         }
 
-        await docRef.update(castUpdateData)
+        // Firestore rejects 'undefined' values. We must recursively clean the payload.
+        const cleanUndefined = (obj) => {
+            if (Array.isArray(obj)) {
+                return obj.map(v => cleanUndefined(v)).filter(v => v !== undefined);
+            }
+            if (obj !== null && typeof obj === 'object' && !(obj instanceof Date) && typeof obj.toDate !== 'function') {
+                return Object.entries(obj).reduce((acc, [key, val]) => {
+                    if (val !== undefined) {
+                        acc[key] = cleanUndefined(val);
+                    }
+                    return acc;
+                }, {});
+            }
+            return obj;
+        };
+
+        const cleanedUpdateData = cleanUndefined(castUpdateData);
+
+        await docRef.update(cleanedUpdateData)
 
         if (options.new) {
             return { id: doc.id, ...mergedData }
