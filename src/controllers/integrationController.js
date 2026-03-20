@@ -95,11 +95,13 @@ export async function listIntegrations(req, res) {
 export async function initiateAuth(req, res) {
     try {
         const { provider } = req.params;
-        // Use user uid as state for simplicity in this dev environment, 
-        // in production this should be a secure random string mapped to the user.
+        const userId = await getUserId(req);
+        if (!userId) throw new Error('User profile not found');
+
+        // Use user uid as state for simplicity in this dev environment
         const state = req.user.uid; 
         
-        const authUrl = integrationService.getAuthUrl(provider, state);
+        const authUrl = await integrationService.getAuthUrl(userId, provider, state);
         res.json({ success: true, authUrl });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });

@@ -5,11 +5,30 @@ import { INTEGRATIONS_CONFIG } from '../config/integrations.js';
 import axios from 'axios';
 
 /**
+ * Get the integration config for a user, combining defaults with user overrides
+ */
+export async function getConfigForUser(userId, providerName) {
+    const profile = await User.findById(userId);
+    if (!profile) throw new Error('User profile not found');
+    
+    // Config is stored within the integrations object in the profile
+    const userConfig = profile.integrations?.[providerName] || {};
+    const defaultConfig = INTEGRATIONS_CONFIG[providerName] || {};
+
+    return {
+        clientId: userConfig.clientId || defaultConfig.clientId,
+        clientSecret: userConfig.clientSecret || defaultConfig.clientSecret,
+        redirectUri: userConfig.redirectUri || defaultConfig.redirectUri,
+        scopes: defaultConfig.scopes || []
+    };
+}
+
+/**
  * Generate OAuth Authorization URL
  */
-export function getAuthUrl(providerName, state) {
-    const config = INTEGRATIONS_CONFIG[providerName];
-    if (!config) throw new Error(`Provider ${providerName} not configured`);
+export async function getAuthUrl(userId, providerName, state) {
+    const config = await getConfigForUser(userId, providerName);
+    if (!config.clientId) throw new Error(`Provider ${providerName} is not configured (missing Client ID)`);
 
     if (providerName === 'github') {
         return `https://github.com/login/oauth/authorize?client_id=${config.clientId}&redirect_uri=${config.redirectUri}&scope=${config.scopes.join(' ')}&state=${state}`;
@@ -24,8 +43,10 @@ export function getAuthUrl(providerName, state) {
  * Handle OAuth Callback and exchange code for token
  */
 export async function handleCallback(providerName, code, userId) {
-    const config = INTEGRATIONS_CONFIG[providerName];
-    if (!config) throw new Error(`Provider ${providerName} not configured`);
+    const config = await getConfigForUser(userId, providerName);
+    if (!config.clientId || !config.clientSecret) {
+        throw new Error(`Provider ${providerName} is not fully configured (missing Client ID or Secret)`);
+    }
 
     let tokenData;
 
@@ -74,7 +95,7 @@ export async function handleCallback(providerName, code, userId) {
  * Update user integration settings (e.g., GitHub)
  * @param {string} userId - User Doc ID
  * @param {string} providerName - 'github', etc.
- * @param {Object} config - Connection config
+ * @param {Object} config - Connection config or metadata
  */
 export async function updateIntegration(userId, providerName, config) {
     const profile = await User.findById(userId);
@@ -85,25 +106,33 @@ export async function updateIntegration(userId, providerName, config) {
         throw new Error('Only admins can configure profile integrations');
     }
 
-    // Initialize and validate the integration connection
-    const provider = IntegrationProvider(providerName, config);
-    const validation = await provider.connect();
-
-    if (!validation.success) {
-        throw new Error(`Failed to connect to ${providerName}`);
-    }
-
-    // Update the profile with new integration settings
     const integrations = profile.integrations || {};
-    integrations[providerName] = {
-        ...config,
-        connected: true, // Explicitly set connected status
-        // Normalize identifying fields across providers
-        accountName: validation.accountName || validation.user || validation.name || validation.urn,
-        personUrn: validation.personUrn || validation.urn || null,
-        connectedAt: integrations[providerName]?.connectedAt || new Date(),
-        updatedAt: new Date()
-    };
+    
+    // If we have an access token, we validate the connection
+    if (config.accessToken) {
+        const provider = IntegrationProvider(providerName, config);
+        const validation = await provider.connect();
+
+        if (!validation.success) {
+            throw new Error(`Failed to connect to ${providerName}`);
+        }
+
+        integrations[providerName] = {
+            ...config,
+            connected: true,
+            accountName: validation.accountName || validation.user || validation.name || validation.urn,
+            personUrn: validation.personUrn || validation.urn || null,
+            connectedAt: integrations[providerName]?.connectedAt || new Date(),
+            updatedAt: new Date()
+        };
+    } else {
+        // Just update configuration or other metadata
+        integrations[providerName] = {
+            ...(integrations[providerName] || {}),
+            ...config,
+            updatedAt: new Date()
+        };
+    }
 
     const updatedProfile = await User.findByIdAndUpdate(userId, { integrations }, { new: true });
     logger.info(`IntegrationService: User ${userId} updated integration: ${providerName}`);
