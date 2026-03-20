@@ -135,10 +135,31 @@ const updateUser = async (req, res) => {
         const { uid } = req.user;
         const updates = req.body;
 
-        // Prevent updating sensitive fields directly
+        // 1. Prevent updating sensitive system fields directly
         delete updates.uid;
         delete updates.role;
         delete updates.status;
+
+        // 2. Fetch existing user to handle deep merge of integrations if needed
+        const currentUser = await userService.getUser(uid);
+        if (!currentUser) throw new Error('User not found');
+
+        // 3. Handle Integrations Merge (Prevent overwriting existing keys/tokens)
+        if (updates.integrations) {
+            const currentIntegrations = currentUser.integrations || {};
+            const newIntegrations = updates.integrations;
+            
+            // Shallow merge each provider
+            Object.keys(newIntegrations).forEach(provider => {
+                currentIntegrations[provider] = {
+                    ...(currentIntegrations[provider] || {}),
+                    ...(newIntegrations[provider] || {}),
+                    updatedAt: new Date()
+                };
+            });
+            
+            updates.integrations = currentIntegrations;
+        }
 
         const updatedUser = await userService.updateUser(uid, updates);
         res.json({ success: true, data: updatedUser });
