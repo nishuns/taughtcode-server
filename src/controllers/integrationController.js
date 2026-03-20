@@ -6,7 +6,7 @@ import logger from '../utils/logger.js';
  * Get user Doc ID from request context
  */
 async function getUserId(req) {
-    if (req.user.id) return req.user.id;
+    // We always want the Firestore Document ID, not the Firebase UID
     const profile = await userService.getUser(req.user.uid);
     return profile?.id;
 }
