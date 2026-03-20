@@ -146,6 +146,7 @@ const updateUser = async (req, res) => {
 
         // 3. Handle Integrations Merge (Prevent overwriting existing keys/tokens)
         if (updates.integrations) {
+            logger.info(`UserProfileController: Merging integrations for user ${uid}`, { incoming: updates.integrations });
             const currentIntegrations = currentUser.integrations || {};
             const newIntegrations = updates.integrations;
             
@@ -159,6 +160,7 @@ const updateUser = async (req, res) => {
             });
             
             updates.integrations = currentIntegrations;
+            logger.info(`UserProfileController: Merge complete for ${uid}`, { result: updates.integrations });
         }
 
         const updatedUser = await userService.updateUser(uid, updates);
