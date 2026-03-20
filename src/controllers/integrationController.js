@@ -1,5 +1,6 @@
 import * as integrationService from '../services/integrationService.js';
 import * as userService from '../services/userProfileService.js';
+import * as aiService from '../services/aiService.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -105,6 +106,26 @@ export async function initiateAuth(req, res) {
         res.json({ success: true, authUrl });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
+    }
+}
+
+/**
+ * Generate a social post using AI
+ */
+export async function generateSocialPost(req, res) {
+    try {
+        const { title, description, type } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({ success: false, error: 'Title is required' });
+        }
+
+        const post = await aiService.generateSocialPost({ title, description, type });
+        
+        res.json({ success: true, data: post });
+    } catch (error) {
+        logger.error('IntegrationController: AI Post Generation Error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 }
 

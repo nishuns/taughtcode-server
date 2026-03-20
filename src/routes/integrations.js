@@ -37,6 +37,15 @@ router.get('/:provider/auth', integrationController.initiateAuth);
 
 /**
  * @swagger
+ * /integrations/ai-post:
+ *   post:
+ *     summary: Generate a social media post summary using AI
+ *     tags: [Integrations]
+ */
+router.post('/ai-post', integrationController.generateSocialPost);
+
+/**
+ * @swagger
  * /integrations/{provider}:
  *   put:
  *     summary: Update/Setup a third-party integration (e.g., github)

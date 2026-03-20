@@ -39,4 +39,29 @@ async function generateImage(prompt, options = {}) {
     }
 }
 
-export { generateText, chat, chatStream, generateImage };
+/**
+ * Generate a professional LinkedIn post for an article or book
+ * @param {Object} content - { title, description, type }
+ */
+async function generateSocialPost(content) {
+    const { title, description, type = 'article' } = content;
+    
+    const prompt = `Write a professional, engaging LinkedIn post for a new ${type} I just published.
+    
+    Title: ${title}
+    Description: ${description}
+    
+    Requirements:
+    1. Start with an attention-grabbing hook.
+    2. Summarize the key value proposition.
+    3. Use a professional yet conversational tone.
+    4. Include 2-3 relevant hashtags.
+    5. Keep it under 1000 characters.
+    6. DO NOT include links (I will add the link manually).
+    
+    Output only the post text.`;
+
+    return await generateText(prompt, { temperature: 0.7 });
+}
+
+export { generateText, chat, chatStream, generateImage, generateSocialPost };
