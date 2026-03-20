@@ -23,25 +23,7 @@ export const onboardUserSchema = Joi.object({
         website: Joi.string().uri().optional().allow('')
     }).optional(),
     
-    integrations: Joi.object({
-        openai: Joi.object({
-            apiKey: Joi.string().optional(),
-            organizationId: Joi.string().optional()
-        }).optional(),
-        gemini: Joi.object({
-            apiKey: Joi.string().optional()
-        }).optional(),
-        anthropic: Joi.object({
-            apiKey: Joi.string().optional()
-        }).optional(),
-        huggingface: Joi.object({
-            accessToken: Joi.string().optional()
-        }).optional(),
-        github: Joi.object({
-            accessToken: Joi.string().optional(),
-            username: Joi.string().optional()
-        }).optional()
-    }).unknown(true).optional()
+    integrations: Joi.object().unknown(true).optional()
 });
 
 export const updateUserSchema = Joi.object({
@@ -66,25 +48,7 @@ export const updateUserSchema = Joi.object({
         github: Joi.string().uri().optional().allow(''),
         website: Joi.string().uri().optional().allow('')
     }),
-    integrations: Joi.object({
-        openai: Joi.object({
-            apiKey: Joi.string().optional(),
-            organizationId: Joi.string().optional()
-        }).optional(),
-        gemini: Joi.object({
-            apiKey: Joi.string().optional()
-        }).optional(),
-        anthropic: Joi.object({
-            apiKey: Joi.string().optional()
-        }).optional(),
-        huggingface: Joi.object({
-            accessToken: Joi.string().optional()
-        }).optional(),
-        github: Joi.object({
-            accessToken: Joi.string().optional(),
-            username: Joi.string().optional()
-        }).optional()
-    }).unknown(true).optional(),
+    integrations: Joi.object().unknown(true).optional(),
     preferences: Joi.object({
         theme: Joi.string().valid('light', 'dark'),
         notifications: Joi.boolean(),
