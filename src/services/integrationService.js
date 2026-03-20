@@ -86,7 +86,7 @@ export async function handleCallback(providerName, code, userId) {
         ...tokenData,
         ...accountInfo,
         connected: true
-    });
+    }, { skipValidation: true });
 
     return accountInfo;
 }
@@ -96,8 +96,9 @@ export async function handleCallback(providerName, code, userId) {
  * @param {string} userId - User Doc ID
  * @param {string} providerName - 'github', etc.
  * @param {Object} config - Connection config or metadata
+ * @param {Object} options - Update options (e.g., skipValidation)
  */
-export async function updateIntegration(userId, providerName, config) {
+export async function updateIntegration(userId, providerName, config, options = {}) {
     const profile = await User.findById(userId);
     if (!profile) throw new Error('User not found');
 
@@ -107,10 +108,14 @@ export async function updateIntegration(userId, providerName, config) {
     }
 
     const integrations = profile.integrations || {};
+    const existingConfig = integrations[providerName] || {};
     
-    // If we have an access token, we validate the connection
-    if (config.accessToken) {
-        const provider = IntegrationProvider(providerName, config);
+    // Merge new config with existing to preserve keys (ClientId, Secret)
+    const mergedConfig = { ...existingConfig, ...config };
+    
+    // If we have an access token and aren't skipping validation
+    if (mergedConfig.accessToken && !options.skipValidation) {
+        const provider = IntegrationProvider(providerName, mergedConfig);
         const validation = await provider.connect();
 
         if (!validation.success) {
@@ -118,7 +123,7 @@ export async function updateIntegration(userId, providerName, config) {
         }
 
         integrations[providerName] = {
-            ...config,
+            ...mergedConfig,
             connected: true,
             accountName: validation.accountName || validation.user || validation.name || validation.urn,
             personUrn: validation.personUrn || validation.urn || null,
@@ -126,12 +131,19 @@ export async function updateIntegration(userId, providerName, config) {
             updatedAt: new Date()
         };
     } else {
-        // Just update configuration or other metadata
+        // Just update configuration (keys) or metadata
         integrations[providerName] = {
-            ...(integrations[providerName] || {}),
-            ...config,
+            ...mergedConfig,
+            // If accessToken was provided but validation was skipped, assume connected
+            connected: mergedConfig.accessToken ? true : !!mergedConfig.connected,
             updatedAt: new Date()
         };
+        
+        // If we are saving connections from handleCallback, we want to normalize fields too
+        if (config.accountName || config.urn || config.personUrn) {
+            integrations[providerName].accountName = config.accountName || mergedConfig.accountName;
+            integrations[providerName].personUrn = config.personUrn || config.urn || mergedConfig.personUrn;
+        }
     }
 
     const updatedProfile = await User.findByIdAndUpdate(userId, { integrations }, { new: true });
