@@ -11,7 +11,8 @@ The User Profile represents a registered user in the system. It contains persona
 | `coverURL` | String | No | URL to the cover photo. |
 | `occupation` | String | No | User's job title or occupation. |
 | `bio` | String | No | Short biography (max 1000 chars). |
-| `skills` | Array | No | List of technical/soft skills. |
+| `skills` | Array | No | List of technical/soft skills (Strings). |
+| `projects` | Array | No | Featured projects: `{ title, description, link }`. |
 | `hobbies` | Array | No | List of hobbies (Strings). |
 | `interests` | Array | No | List of interests (Strings). |
 | `expertise` | Array | No | Areas of expertise (Strings). |

@@ -36,26 +36,33 @@ Both integrations will utilize the standard OAuth 2.0 authorization code flow.
   - Connects to the LinkedIn API (`/v2/ugcPosts` or `/v2/shares`) using the user's stored access token to publish a post on their timeline.
   - Used in conjunction with TaughtCode's publishing pipeline.
 
-## 4. Data Model Expansion
+### 3.3 AI Post Generation
+- **Goal**: Help users craft the perfect social media message for their new content.
+- **Implementation**: Uses Gemini AI to analyze the article or book title and description to generate an engaging LinkedIn post with hashtags.
+- **Workflow**: Accessible via the "Social Distribution" sidebar in the Article and Book editors.
 
-The `userProfileSchema` in `userProfileModel.js` already includes an `integrations` object. It will be expanded to securely store connection metadata:
+## 4. Data Model and Configuration
 
+TaughtCode supports a hybrid configuration model:
+- **System Defaults**: Configured via environment variables (`GITHUB_CLIENT_ID`, etc.) for platform-wide apps.
+- **User Overrides**: Users can provide their own Client ID and Client Secret directly in their profile (stored in the `integrations` object). This is ideal for developers who want to use their own personal OAuth apps.
+
+### User Integration Schema
 ```javascript
 integrations: {
-    type: Object,
-    default: {
-        github: {
-            connected: false,
-            username: null,
-            accessToken: null, // Should be encrypted at rest
-            syncedAt: null
-        },
-        linkedin: {
-            connected: false,
-            urn: null, // LinkedIn Member URN
-            accessToken: null, // Should be encrypted at rest
-            expiresAt: null
-        }
+    github: {
+        clientId: String,     // User override
+        clientSecret: String, // User override
+        accessToken: String,  // OAuth result
+        accountName: String,  // Normalized username
+        connected: Boolean
+    },
+    linkedin: {
+        clientId: String,
+        clientSecret: String,
+        accessToken: String,
+        personUrn: String,    // Required for posting
+        connected: Boolean
     }
 }
 ```
