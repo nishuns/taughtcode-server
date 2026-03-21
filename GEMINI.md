@@ -10,8 +10,9 @@
 2. In case of revert just revert back to last commit
 
 ## Push Rules
-1. Never push on master and develop branch directly
-2. Always create a merge request for the changes
+1. **NEVER** push to `master`, `main`, or `develop` branches directly.
+2. All changes **MUST** be made in a feature branch and merged via a Pull Request / Merge Request.
+3. No exceptions, even for quick fixes or build errors.
 
 ## Branching Strategy
 
