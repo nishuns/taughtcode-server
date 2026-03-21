@@ -74,6 +74,7 @@ export function summarizeProfileStats(viewer) {
         followerCount: viewer.followers.totalCount,
         followingCount: viewer.following.totalCount,
         pullRequestCount: viewer.pullRequests.totalCount,
-        issueCount: viewer.issues.totalCount
+        issueCount: viewer.issues.totalCount,
+        contributedRepositoryCount: viewer.repositoriesContributedTo.totalCount
     };
 }

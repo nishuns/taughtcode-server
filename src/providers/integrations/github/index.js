@@ -157,9 +157,9 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
                           }
                         }
                       }
-                      ContributedRepositories: repositoriesContributedTo(first: 1, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, PULL_REQUEST_REVIEW]) {
-                        totalCount
-                      }
+                    }
+                    repositoriesContributedTo(first: 1, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, PULL_REQUEST_REVIEW]) {
+                      totalCount
                     }
                     followers {
                       totalCount
