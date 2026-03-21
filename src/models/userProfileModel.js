@@ -95,6 +95,13 @@ const userProfileSchema = {
         type: Object,
         default: {}
     },
+    analytics: {
+        type: Object,
+        default: {
+            github: null,   // Stores processed githubAnalyticsSchema
+            linkedin: null  // Stores processed linkedinAnalyticsSchema
+        }
+    },
     organizationId: {
         type: String, // Link to Organization Model
         default: null
