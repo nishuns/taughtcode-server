@@ -37,7 +37,6 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
 
             try {
                 // Try modern OpenID Connect userinfo endpoint (SSID)
-                // The user clarified this is /v2/userinfo
                 const response = await axios.get("https://api.linkedin.com/v2/userinfo", {
                     headers: {
                         Authorization: `Bearer ${this.config.accessToken}`,
@@ -109,18 +108,11 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
             const { action, text, url, title, personUrn = this.config.personUrn } = options;
 
             if (action === 'sync_profile') {
-                // Fetch deep profile data
-                // Note: Some fields require 'Member Data' or 'Full Profile' products
-                // We attempt to get as much as possible.
                 const { data: profile } = await axios.get("https://api.linkedin.com/v2/userinfo", {
                     headers: { Authorization: `Bearer ${this.config.accessToken}` }
                 });
 
-                // Fetch positions/headline if available via /v2/me with projections
-                // In some scopes, this might fail, so we wrap in try-catch
-                let positions = [];
                 let headline = "";
-                let summary = "";
 
                 try {
                     const { data: me } = await this.client.get("/me?projection=(headline,summary)");
@@ -130,15 +122,13 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
                 return {
                     ...profile,
                     headline,
-                    summary,
-                    positions, // Placeholder for now as it requires specific API access
-                    skills: []   // Placeholder
+                    positions: [],
+                    skills: []
                 };
             }
 
             // Default behavior: Post content
             if (!personUrn) throw new Error("LinkedIn Person URN is required to post");
-    ...
 
             const postData = {
                 author: personUrn,
