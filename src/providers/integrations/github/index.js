@@ -64,56 +64,104 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
         this.client = null;
         return true;
     }
+/**
+ * Sync data or fetch info
+ * @param {Object} options 
+ * @param {string} options.action - 'get_content', 'get_repos', 'get_stats'
+ */
+async sync(options = {}) {
+    try {
+        const { action = 'get_content', owner, repo, path = "" } = { ...this.config, ...options };
 
-    /**
-     * Sync data or fetch info
-     * @param {Object} options 
-     * @param {string} options.action - 'get_content', 'get_repos'
-     */
-    async sync(options = {}) {
-        try {
-            const { action = 'get_content', owner, repo, path = "" } = { ...this.config, ...options };
-            
-            if (action === 'get_repos') {
-                return await this.getRepositories();
-            }
-
-            const { data } = await this.client.repos.getContent({
-                owner,
-                repo,
-                path
-            });
-
-            return data;
-        } catch (error) {
-            throw new Error(`GitHub Sync Error: ${error.message}`);
+        if (action === 'get_repos') {
+            return await this.getRepositories();
         }
-    }
 
-    /**
-     * Helper to get list of repositories for the authenticated user
-     */
-    async getRepositories() {
-        try {
-            const { data } = await this.client.repos.listForAuthenticatedUser({
-                sort: 'updated',
-                per_page: 100,
-                affiliation: 'owner'
-            });
-            return data.map(repo => ({
-                id: repo.id,
-                title: repo.name,
-                description: repo.description || '',
-                link: repo.html_url,
-                full_name: repo.full_name,
-                private: repo.private,
-                stars: repo.stargazers_count,
-                language: repo.language
-            }));
-        } catch (error) {
-            throw new Error(`GitHub API Error: ${error.message}`);
+        if (action === 'get_stats') {
+            return await this.getProfileStats();
         }
+
+        const { data } = await this.client.repos.getContent({
+            owner,
+            repo,
+            path
+        });
+
+        return data;
+    } catch (error) {
+        throw new Error(`GitHub Sync Error: ${error.message}`);
     }
 }
+
+/**
+ * Helper to get list of repositories for the authenticated user
+ */
+...
+/**
+ * Fetch deep profile statistics using GraphQL
+ */
+async getProfileStats() {
+    try {
+        const query = `
+            {
+              viewer {
+                login
+                avatarUrl
+                repositories(first: 100, ownerAffiliations: OWNER, orderBy: {field: STARGAZERS, direction: DESC}) {
+                  totalCount
+                  nodes {
+                    name
+                    stargazerCount
+                    forkCount
+                    languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                      edges {
+                        size
+                        node {
+                          name
+                          color
+                        }
+                      }
+                    }
+                  }
+                }
+                contributionsCollection {
+                  contributionCalendar {
+                    totalContributions
+                    weeks {
+                      contributionDays {
+                        contributionCount
+                        date
+                        contributionLevel
+                      }
+                    }
+                  }
+                ContributedRepositories: repositoriesContributedTo(first: 1, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, PULL_REQUEST_REVIEW]) {
+                    totalCount
+                }
+                }
+                followers {
+                  totalCount
+                }
+                following {
+                  totalCount
+                }
+                pullRequests {
+                  totalCount
+                }
+                issues {
+                  totalCount
+                }
+              }
+            }
+        `;
+
+        const { viewer } = await this.client.graphql(query);
+        return viewer;
+    } catch (error) {
+        throw new Error(`GitHub GraphQL Error: ${error.message}`);
+    }
+}
+}
+
 
 export default GitHubIntegrationProvider;

@@ -2,6 +2,8 @@ import { User } from '../models/index.js';
 import logger from '../utils/logger.js';
 import { IntegrationProvider } from '../providers/integrations/registry.js';
 import { INTEGRATIONS_CONFIG } from '../config/integrations.js';
+import * as githubUtils from '../utils/githubAnalytics.js';
+import * as linkedinUtils from '../utils/linkedinAnalytics.js';
 import axios from 'axios';
 
 /**
@@ -182,10 +184,61 @@ export async function syncIntegration(userId, providerName, syncOptions = {}) {
     // Connect first
     await provider.connect();
     
+    // Check for special analytics sync actions
+    if (syncOptions.action === 'get_stats' || syncOptions.action === 'sync_profile') {
+        return await syncProfileStats(userId, providerName, syncOptions);
+    }
+
     const data = await provider.sync(syncOptions);
     logger.info(`IntegrationService: Synced data for ${providerName} (User: ${userId})`);
     
     return data;
+}
+
+/**
+ * Perform deep sync of profile statistics and analytics
+ */
+export async function syncProfileStats(userId, providerName, options = {}) {
+    const config = await getIntegration(userId, providerName);
+    if (!config) throw new Error(`Integration ${providerName} not configured`);
+
+    const profile = await User.findById(userId);
+    const provider = IntegrationProvider(providerName, config);
+    
+    let processedData = null;
+
+    if (providerName === 'github') {
+        const rawStats = await provider.sync({ action: 'get_stats' });
+        processedData = {
+            username: rawStats.login,
+            avatarUrl: rawStats.avatarUrl,
+            stats: githubUtils.summarizeProfileStats(rawStats),
+            languages: githubUtils.calculateLanguagePercentages(rawStats.repositories.nodes),
+            contributionCalendar: githubUtils.processContributionCalendar(rawStats.contributionsCollection.contributionCalendar),
+            lastSyncedAt: new Date()
+        };
+    } else if (providerName === 'linkedin') {
+        // LinkedIn might use positions sync or other profile data
+        const rawProfile = await provider.sync({ action: 'sync_profile' });
+        processedData = {
+            memberId: rawProfile.id,
+            accountName: `${rawProfile.firstName} ${rawProfile.lastName}`,
+            headline: rawProfile.headline,
+            summary: rawProfile.summary,
+            positions: linkedinUtils.formatPositions(rawProfile.positions),
+            verifiedSkills: linkedinUtils.extractTopSkills(rawProfile.skills),
+            lastSyncedAt: new Date()
+        };
+    }
+
+    if (processedData) {
+        const analytics = profile.analytics || {};
+        analytics[providerName] = processedData;
+        await User.findByIdAndUpdate(userId, { analytics }, { new: true });
+        logger.info(`IntegrationService: Updated analytics for ${providerName} (User: ${userId})`);
+    }
+
+    return processedData;
 }
 
 /**

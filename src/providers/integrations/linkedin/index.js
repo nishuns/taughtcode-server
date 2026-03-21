@@ -98,19 +98,47 @@ class LinkedInIntegrationProvider extends BaseIntegrationProvider {
     }
 
     /**
-     * Share content to LinkedIn
+     * Share content to LinkedIn or fetch profile data
      * @param {Object} options
-     * @param {string} options.text - The post content
-     * @param {string} options.url - Optional link to share
-     * @param {string} options.title - Optional title for the link
+     * @param {string} options.action - 'sync_profile' or null (for posting)
      */
     async sync(options = {}) {
         try {
             if (!this.client) throw new Error("Not connected to LinkedIn");
-            
-            const { text, url, title, personUrn = this.config.personUrn } = options;
-            
+
+            const { action, text, url, title, personUrn = this.config.personUrn } = options;
+
+            if (action === 'sync_profile') {
+                // Fetch deep profile data
+                // Note: Some fields require 'Member Data' or 'Full Profile' products
+                // We attempt to get as much as possible.
+                const { data: profile } = await axios.get("https://api.linkedin.com/v2/userinfo", {
+                    headers: { Authorization: `Bearer ${this.config.accessToken}` }
+                });
+
+                // Fetch positions/headline if available via /v2/me with projections
+                // In some scopes, this might fail, so we wrap in try-catch
+                let positions = [];
+                let headline = "";
+                let summary = "";
+
+                try {
+                    const { data: me } = await this.client.get("/me?projection=(headline,summary)");
+                    headline = me.headline?.localized?.[me.headline.preferredLocale?.language + "_" + me.headline.preferredLocale?.country] || "";
+                } catch (e) { /* ignore */ }
+
+                return {
+                    ...profile,
+                    headline,
+                    summary,
+                    positions, // Placeholder for now as it requires specific API access
+                    skills: []   // Placeholder
+                };
+            }
+
+            // Default behavior: Post content
             if (!personUrn) throw new Error("LinkedIn Person URN is required to post");
+    ...
 
             const postData = {
                 author: personUrn,
