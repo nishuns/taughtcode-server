@@ -315,6 +315,7 @@ export {
     updateLastActive,
     isDisplayNameTaken,
     listUsers,
+    getPrimaryAdmin,
     updateProfilePicture,
     updateCoverPhoto,
     addGalleryAsset,
