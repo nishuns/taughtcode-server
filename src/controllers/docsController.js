@@ -36,7 +36,7 @@ async function getDoc(req, res) {
 
     try {
         // Extract path from request (Express 5 regex route or standard params)
-        let routePath = req.params[0] || req.path;
+        let routePath = req.params.path || req.params[0] || req.path;
         routePath = routePath.replace(/^\/+/, '').replace(/\/+$/, '').replace(/^docs\//, '');
 
         // Check for refresh parameter (allow manual refresh via ?refresh=true)
