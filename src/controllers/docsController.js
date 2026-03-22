@@ -1,11 +1,28 @@
 import * as docsService from '../services/docsService.js';
 import { renderDocPage, renderTemplate } from '../utils/templateRenderer.js';
 import docsConfig from '../config/docs.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DOCS_DIR = path.join(__dirname, '../../docs');
 
 /**
  * Documentation Controller
  * Thin controller that delegates to service layer
  */
+
+/**
+ * Helper to check if JSON is requested
+ */
+function isJsonRequest(req) {
+    return req.xhr || 
+           (req.headers.accept && req.headers.accept.indexOf('json') > -1) ||
+           req.path.startsWith('/api') ||
+           req.originalUrl.includes('/api/v1/docs');
+}
 
 /**
  * Get documentation file
@@ -18,10 +35,9 @@ async function getDoc(req, res) {
     }
 
     try {
-        // Extract path from request (Express 5 regex route)
-        // req.path is relative to router mount point (/docs)
-        // e.g., '/guides/quick-start' -> 'guides/quick-start'
-        const routePath = req.path.replace(/^\/+/, '').replace(/\/+$/, '');
+        // Extract path from request (Express 5 regex route or standard params)
+        let routePath = req.params[0] || req.path;
+        routePath = routePath.replace(/^\/+/, '').replace(/\/+$/, '').replace(/^docs\//, '');
 
         // Check for refresh parameter (allow manual refresh via ?refresh=true)
         const forceRefresh = req.query.refresh === 'true';
@@ -31,6 +47,26 @@ async function getDoc(req, res) {
 
         // Get navigation structure (with optional refresh)
         const navigation = await docsService.getNavigationStructure(forceRefresh);
+
+        if (isJsonRequest(req)) {
+            // Fetch raw markdown for frontend rendering
+            let rawMarkdown = '';
+            try {
+                const filePath = path.join(DOCS_DIR, `${routePath}.md`);
+                rawMarkdown = await fs.readFile(filePath, 'utf-8');
+            } catch (e) {
+                // If it's a directory or missing, leave empty
+            }
+
+            return res.json({
+                success: true,
+                data: {
+                    ...docData,
+                    markdown: rawMarkdown,
+                    navigation
+                }
+            });
+        }
 
         // Render page using template
         const html = await renderDocPage({
@@ -45,6 +81,9 @@ async function getDoc(req, res) {
         console.error('Error serving documentation:', error);
 
         if (error.message === 'File not found') {
+            if (isJsonRequest(req)) {
+                return res.status(404).json({ success: false, error: 'Documentation not found' });
+            }
             return res.status(404).send(await get404Page());
         }
 
@@ -53,6 +92,10 @@ async function getDoc(req, res) {
                 success: false,
                 error: 'Access denied'
             });
+        }
+
+        if (isJsonRequest(req)) {
+            return res.status(500).json({ success: false, error: 'Internal server error' });
         }
 
         res.status(500).json({
@@ -82,6 +125,16 @@ async function listDocs(req, res) {
         // Get navigation structure (with optional refresh)
         const navigation = await docsService.getNavigationStructure(forceRefresh);
 
+        if (isJsonRequest(req)) {
+            return res.json({
+                success: true,
+                data: {
+                    ...indexData,
+                    navigation
+                }
+            });
+        }
+
         // Render page using template
         const html = await renderDocPage({
             title: indexData.title,
@@ -93,6 +146,11 @@ async function listDocs(req, res) {
         res.send(html);
     } catch (error) {
         console.error('Error listing documentation:', error);
+        
+        if (isJsonRequest(req)) {
+            return res.status(500).json({ success: false, error: 'Internal server error' });
+        }
+
         res.status(500).json({
             success: false,
             error: 'Internal server error'

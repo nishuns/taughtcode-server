@@ -61,7 +61,9 @@ class GitHubIntegrationProvider extends BaseIntegrationProvider {
     }
 
     async disconnect() {
-        this.client = null;
+        if (this.client) {
+            this.client = null;
+        }
         return true;
     }
 

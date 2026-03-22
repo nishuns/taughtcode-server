@@ -8,6 +8,7 @@ import integrationRoutes from './integrations.js';
 import conversationRoutes from './conversations.js';
 import bookRoutes from './books.js';
 import eventRoutes from './events.js';
+import * as docsController from '../controllers/docsController.js';
 
 const router = express.Router();
 
@@ -43,6 +44,10 @@ router.use('/books', bookRoutes);
 
 // Event Routes
 router.use('/events', eventRoutes);
+
+// Documentation API Routes
+router.get('/docs/navigation', docsController.listDocs);
+router.get('/docs/content/*', docsController.getDoc);
 
 /**
  * @swagger
