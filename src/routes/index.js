@@ -47,7 +47,7 @@ router.use('/events', eventRoutes);
 
 // Documentation API Routes
 router.get('/docs/navigation', docsController.listDocs);
-router.get('/docs/content/:path*', docsController.getDoc);
+router.get(/\/docs\/content\/(.*)/, docsController.getDoc);
 
 /**
  * @swagger
