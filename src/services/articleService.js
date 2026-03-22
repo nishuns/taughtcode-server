@@ -5,39 +5,19 @@ import * as storageService from './storageService.js';
 import * as templateService from './articleTemplateService.js';
 import { generateStructurePrompt, generateContentPrompt } from '../prompts/articlePrompts.js';
 import { minifyHTML } from '../utils/htmlMinifier.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DOCS_ARTICLES_DIR = path.join(__dirname, '../../docs/articles');
 
 /**
- * Publish an article to the documentation system
- * @param {string} id 
- * @param {string} authorId 
+ * Publish an article
+ * @param {string} id
+ * @param {string} authorId
  */
 async function publishArticle(id, authorId) {
     const article = await Article.findById(id);
     if (!article) throw new Error('Article not found');
-    
+
     if (article.authorId !== authorId) {
         throw new Error('Unauthorized');
     }
-
-    // Ensure directory exists
-    await fs.mkdir(DOCS_ARTICLES_DIR, { recursive: true });
-
-    // Minify HTML content for publication
-    const minifiedContent = minifyHTML(article.content);
-    
-    // For better integration, let's add frontmatter-like title if our docs service supports parsing it, 
-    // or just prepend the Title.
-    
-    const fileContent = `# ${article.title}\n${minifiedContent}`;
-    const filePath = path.join(DOCS_ARTICLES_DIR, `${article.slug}.md`);
-    
-    await fs.writeFile(filePath, fileContent, 'utf8');
 
     // Update DB
     const updated = await Article.findByIdAndUpdate(id, {
@@ -48,7 +28,6 @@ async function publishArticle(id, authorId) {
     logger.info(`Article published: ${article.slug}`);
     return updated;
 }
-
 /**
  * Generate an article using AI
  * @param {string} authorId
