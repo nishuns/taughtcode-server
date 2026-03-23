@@ -2,7 +2,7 @@ import * as billboardService from '../services/billboardService.js';
 
 export const createBillboard = async (req, res) => {
     try {
-        const billboard = await billboardService.createBillboard(req.body);
+        const billboard = await billboardService.createBillboard(req.body, req.file);
         res.status(201).json({ success: true, data: billboard });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
@@ -11,7 +11,7 @@ export const createBillboard = async (req, res) => {
 
 export const updateBillboard = async (req, res) => {
     try {
-        const billboard = await billboardService.updateBillboard(req.params.id, req.body);
+        const billboard = await billboardService.updateBillboard(req.params.id, req.body, req.file);
         res.json({ success: true, data: billboard });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });

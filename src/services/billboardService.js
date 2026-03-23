@@ -3,9 +3,22 @@ import * as aiService from './aiService.js';
 import * as storageService from './storageService.js';
 import logger from '../utils/logger.js';
 
-export async function createBillboard(data) {
+export async function createBillboard(data, file = null) {
+    let imageUrl = data.imageUrl || '';
+
+    if (file) {
+        const uploadResult = await storageService.uploadUserAsset(
+            'system',
+            file.buffer,
+            file.mimetype,
+            'billboard_images'
+        );
+        imageUrl = uploadResult.url;
+    }
+
     const payload = {
         ...data,
+        imageUrl,
         createdAt: new Date(),
         updatedAt: new Date()
     };
@@ -14,11 +27,28 @@ export async function createBillboard(data) {
     return billboard;
 }
 
-export async function updateBillboard(id, data) {
+export async function updateBillboard(id, data, file = null) {
+    let imageUrl = data.imageUrl;
+
+    if (file) {
+        const uploadResult = await storageService.uploadUserAsset(
+            'system',
+            file.buffer,
+            file.mimetype,
+            'billboard_images'
+        );
+        imageUrl = uploadResult.url;
+    }
+
     const payload = {
         ...data,
         updatedAt: new Date()
     };
+    
+    if (imageUrl !== undefined) {
+        payload.imageUrl = imageUrl;
+    }
+
     const updated = await Billboard.findByIdAndUpdate(id, payload, { new: true });
     if (!updated) throw new Error('Billboard not found');
     logger.info(`Billboard updated: ${id}`);
