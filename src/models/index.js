@@ -12,6 +12,7 @@ import conversationModel from './conversationModel.js';
 import bookModel from './bookModel.js';
 import pageModel from './pageModel.js';
 import eventModel from './eventModel.js';
+import billboardModel from './billboardModel.js';
 
 // Export specific models
 export const User = userProfileModel;
@@ -27,6 +28,7 @@ export const Conversation = conversationModel;
 export const Book = bookModel;
 export const Page = pageModel;
 export const Event = eventModel;
+export const Billboard = billboardModel;
 
 // Helper to create simple models on the fly
 export const createModel = (collectionName, schema = null) => {
