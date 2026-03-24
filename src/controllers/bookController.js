@@ -6,10 +6,10 @@ class BookController {
      */
     async createBook(req, res) {
         try {
-            const { title, description, threadId } = req.body;
+            const { title, description, threadId, type } = req.body;
             const userId = req.user.uid;
             
-            const book = await bookService.createBook(userId, title, description, threadId);
+            const book = await bookService.createBook(userId, title, description, type, threadId);
             
             res.status(201).json({
                 success: true,
